@@ -1,0 +1,115 @@
+{
+  "model": "grok-4-0709",
+  "usage": {
+    "prompt_tokens": 86307,
+    "completion_tokens": 393,
+    "total_tokens": 87926,
+    "prompt_tokens_details": {
+      "text_tokens": 86307,
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "cached_tokens": 5
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1226,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "num_sources_used": 0
+  },
+  "response_time_ms": 56339,
+  "prompt_tokens": 86307,
+  "completion_tokens": 393,
+  "total_tokens": 87926,
+  "full_response_content": "{\"basicPropertyInfo\":{\"address\":null,\"city\":null,\"state\":null,\"zipCode\":null,\"county\":null,\"neighborhood\":null,\"mlsNumber\":null,\"parcelId\":null,\"legalDescription\":null},\"propertyDetails\":{\"price\":null,\"listPrice\":null,\"salePrice\":null,\"rentPrice\":null,\"pricePerSqFt\":null,\"squareFootage\":null,\"lotSize\":null,\"bedrooms\":null,\"bathrooms\":null,\"halfBaths\":null,\"fullBaths\":null,\"propertyType\":\"apartment\",\"buildingType\":null,\"yearBuilt\":null,\"stories\":null},\"featuresAmenities\":{\"garage\":null,\"parking spaces\":null,\"basement\":null,\"attic\":null,\"pool\":false,\"fireplace\":false,\"airConditioning\":null,\"heating systems\":null,\"appliances\":null,\"flooring types\":null,\"roofType\":null,\"exteriorMaterial\":null},\"financialInformation\":{\"taxes\":null,\"hoa\":null,\"insurance\":null,\"utilities costs\":null,\"financing details\":null,\"downPayment\":null,\"mortgageRate\":null},\"datesTimeline\":{\"listDate\":\"05/09/2025\",\"saleDate\":null,\"closeDate\":\"07/30/2025\",\"contractDate\":null,\"inspectionDate\":null,\"appraisalDate\":null},\"conditionImprovements\":{\"condition\":null,\"renovations\":null,\"recent improvements\":null,\"repairs or issues\":null},\"locationCommunity\":{\"schoolDistrict\":null,\"walkScore\":null,\"nearbyAmenities\":null,\"transportation access\":null},\"documentClassification\":{\"documentType\":\"disclosure\",\"documentSubtype\":\"rent_index\"},\"realEstateCoreSemanticClassification\":{\"recBuildingType\":\"apartment\",\"recSpaceTypes\":[],\"recAssetTypes\":[],\"recCapabilities\":[]},\"ownershipLegal\":{\"ownerName\":\"Sandra D\u00f6beli\",\"titleCompany\":null,\"legal restrictions or easements\":null}}",
+  "parsed_result": {
+    "basicPropertyInfo": {
+      "address": null,
+      "city": null,
+      "state": null,
+      "zipCode": null,
+      "county": null,
+      "neighborhood": null,
+      "mlsNumber": null,
+      "parcelId": null,
+      "legalDescription": null
+    },
+    "propertyDetails": {
+      "price": null,
+      "listPrice": null,
+      "salePrice": null,
+      "rentPrice": null,
+      "pricePerSqFt": null,
+      "squareFootage": null,
+      "lotSize": null,
+      "bedrooms": null,
+      "bathrooms": null,
+      "halfBaths": null,
+      "fullBaths": null,
+      "propertyType": "apartment",
+      "buildingType": null,
+      "yearBuilt": null,
+      "stories": null
+    },
+    "featuresAmenities": {
+      "garage": null,
+      "parking spaces": null,
+      "basement": null,
+      "attic": null,
+      "pool": false,
+      "fireplace": false,
+      "airConditioning": null,
+      "heating systems": null,
+      "appliances": null,
+      "flooring types": null,
+      "roofType": null,
+      "exteriorMaterial": null
+    },
+    "financialInformation": {
+      "taxes": null,
+      "hoa": null,
+      "insurance": null,
+      "utilities costs": null,
+      "financing details": null,
+      "downPayment": null,
+      "mortgageRate": null
+    },
+    "datesTimeline": {
+      "listDate": "05/09/2025",
+      "saleDate": null,
+      "closeDate": "07/30/2025",
+      "contractDate": null,
+      "inspectionDate": null,
+      "appraisalDate": null
+    },
+    "conditionImprovements": {
+      "condition": null,
+      "renovations": null,
+      "recent improvements": null,
+      "repairs or issues": null
+    },
+    "locationCommunity": {
+      "schoolDistrict": null,
+      "walkScore": null,
+      "nearbyAmenities": null,
+      "transportation access": null
+    },
+    "documentClassification": {
+      "documentType": "disclosure",
+      "documentSubtype": "rent_index"
+    },
+    "realEstateCoreSemanticClassification": {
+      "recBuildingType": "apartment",
+      "recSpaceTypes": [],
+      "recAssetTypes": [],
+      "recCapabilities": []
+    },
+    "ownershipLegal": {
+      "ownerName": "Sandra D\u00f6beli",
+      "titleCompany": null,
+      "legal restrictions or easements": null
+    }
+  },
+  "timestamp": "2025-08-05T17:53:03.860Z"
+}
