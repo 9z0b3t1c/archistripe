@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Full Grok Response Reader</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .response-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .json-view { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .metric-card { background: #e3f2fd; padding: 15px; border-radius: 5px; text-align: center; }
+        .tabs { display: flex; margin: 20px 0; }
+        .tab { padding: 10px 20px; background: #f0f0f0; border: 1px solid #ddd; cursor: pointer; }
+        .tab.active { background: #007bff; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Full Grok Response Reader</h1>
+        <p>This tool allows you to read and analyze complete Grok AI responses from processed documents.</p>
+        
+        <div id="document-list">
+            <h2>Available Documents</h2>
+            <div id="docs-container">Loading documents...</div>
+        </div>
+
+        <div id="response-viewer" style="display: none;">
+            <h2>Full Grok Response Details</h2>
+            
+            <div id="metrics" class="metrics"></div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('summary')">Summary</div>
+                <div class="tab" onclick="showTab('parsed')">Parsed Result</div>
+                <div class="tab" onclick="showTab('raw')">Raw Response</div>
+                <div class="tab" onclick="showTab('metadata')">Full Metadata</div>
+            </div>
+
+            <div id="summary" class="tab-content active">
+                <div id="summary-content"></div>
+            </div>
+
+            <div id="parsed" class="tab-content">
+                <div class="response-section">
+                    <h3>Parsed Extraction Result</h3>
+                    <div class="json-view">
+                        <pre id="parsed-content"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="raw" class="tab-content">
+                <div class="response-section">
+                    <h3>Raw AI Response</h3>
+                    <div class="json-view">
+                        <pre id="raw-content"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="metadata" class="tab-content">
+                <div class="response-section">
+                    <h3>Complete Response Metadata</h3>
+                    <div class="json-view">
+                        <pre id="metadata-content"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResponse = null;
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function formatTokens(tokens) {
+            return tokens ? tokens.toLocaleString() : 'N/A';
+        }
+
+        function formatTime(ms) {
+            if (!ms) return 'N/A';
+            return ms < 1000 ? `${ms}ms` : `${(ms/1000).toFixed(1)}s`;
+        }
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/api/documents');
+                const documents = await response.json();
+                
+                const container = document.getElementById('docs-container');
+                
+                if (documents.length === 0) {
+                    container.innerHTML = '<p class="error">No documents found. Upload a PDF to test the Grok response viewer.</p>';
+                    return;
+                }
+
+                let html = '<div style="display: grid; gap: 15px;">';
+                documents.forEach(doc => {
+                    const hasGrokResponse = doc.propertyData && doc.propertyData.fullGrokResponse;
+                    html += `
+                        <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; ${hasGrokResponse ? 'background: #f0f8ff;' : 'background: #fff8f0;'}">
+                            <h4>${doc.originalName}</h4>
+                            <p><strong>Status:</strong> ${doc.status}</p>
+                            <p><strong>Uploaded:</strong> ${new Date(doc.uploadedAt).toLocaleString()}</p>
+                            ${hasGrokResponse ? 
+                                `<button onclick="loadGrokResponse('${doc.id}')" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">View Full Grok Response</button>` :
+                                `<span class="error">No Grok response available</span>`
+                            }
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                container.innerHTML = html;
+
+            } catch (error) {
+                document.getElementById('docs-container').innerHTML = 
+                    `<p class="error">Error loading documents: ${error.message}</p>`;
+            }
+        }
+
+        async function loadGrokResponse(documentId) {
+            try {
+                const response = await fetch(`/api/documents/${documentId}/grok-response`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                currentResponse = data;
+                
+                displayGrokResponse(data);
+                document.getElementById('response-viewer').style.display = 'block';
+                
+            } catch (error) {
+                alert(`Error loading Grok response: ${error.message}`);
+            }
+        }
+
+        function displayGrokResponse(data) {
+            const gr = data.fullGrokResponse;
+            
+            // Metrics
+            document.getElementById('metrics').innerHTML = `
+                <div class="metric-card">
+                    <h4>Model</h4>
+                    <p>${gr.model || 'Unknown'}</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Total Tokens</h4>
+                    <p>${formatTokens(gr.total_tokens)}</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Processing Time</h4>
+                    <p>${formatTime(gr.response_time_ms)}</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Response Size</h4>
+                    <p>${gr.full_response_content ? gr.full_response_content.length.toLocaleString() : 0} chars</p>
+                </div>
+            `;
+            
+            // Summary
+            document.getElementById('summary-content').innerHTML = `
+                <div class="response-section">
+                    <h3 class="success">✅ Full Grok Response Available</h3>
+                    <p><strong>Document:</strong> ${data.document.originalName}</p>
+                    <p><strong>Model Used:</strong> ${gr.model}</p>
+                    <p><strong>Timestamp:</strong> ${gr.timestamp ? new Date(gr.timestamp).toLocaleString() : 'N/A'}</p>
+                    
+                    <h4>Token Usage:</h4>
+                    <ul>
+                        <li>Prompt Tokens: ${formatTokens(gr.prompt_tokens)}</li>
+                        <li>Completion Tokens: ${formatTokens(gr.completion_tokens)}</li>
+                        <li>Total Tokens: ${formatTokens(gr.total_tokens)}</li>
+                    </ul>
+                    
+                    <h4>Performance:</h4>
+                    <ul>
+                        <li>Processing Time: ${formatTime(gr.response_time_ms)}</li>
+                        <li>Response Content: ${gr.full_response_content ? gr.full_response_content.length.toLocaleString() : 0} characters</li>
+                    </ul>
+                </div>
+            `;
+            
+            // Parsed content
+            document.getElementById('parsed-content').textContent = 
+                JSON.stringify(gr.parsed_result, null, 2);
+            
+            // Raw content
+            document.getElementById('raw-content').textContent = 
+                gr.full_response_content || 'No raw content available';
+            
+            // Metadata
+            document.getElementById('metadata-content').textContent = 
+                JSON.stringify(gr, null, 2);
+        }
+
+        // Load documents on page load
+        loadDocuments();
+        
+        // Refresh every 10 seconds to check for new documents
+        setInterval(loadDocuments, 10000);
+    </script>
+</body>
+</html>
