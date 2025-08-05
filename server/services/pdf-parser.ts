@@ -1,13 +1,31 @@
 import * as fs from "fs";
 import * as path from "path";
+const pdfParse = require("pdf-parse");
 
-// Simple PDF text extraction using basic parsing
+// Advanced PDF text extraction using pdf-parse library
 export async function extractTextFromPDF(filePath: string): Promise<string> {
   try {
     const buffer = await fs.promises.readFile(filePath);
     
-    // Basic PDF text extraction
-    // Convert buffer to string and try to extract readable text
+    console.log(`Attempting to extract text from PDF: ${path.basename(filePath)}`);
+    
+    // Try pdf-parse first for proper PDF parsing
+    try {
+      const pdfData = await pdfParse(buffer);
+      let extractedText = pdfData.text.trim();
+      
+      console.log(`PDF-parse extracted ${extractedText.length} characters`);
+      
+      if (extractedText.length > 50) {
+        return extractedText;
+      }
+      
+      console.log("PDF-parse didn't extract enough text, trying fallback method...");
+    } catch (pdfParseError: any) {
+      console.log("PDF-parse failed, trying fallback method:", pdfParseError?.message || "Unknown error");
+    }
+    
+    // Fallback: Basic PDF text extraction using regex patterns
     const pdfText = buffer.toString('binary');
     
     // Look for text between text operators in PDF
@@ -31,8 +49,15 @@ export async function extractTextFromPDF(filePath: string): Promise<string> {
       .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
     
-    if (extractedText.length < 50) {
-      throw new Error("Insufficient text content extracted from PDF");
+    console.log(`Fallback method extracted ${extractedText.length} characters`);
+    
+    if (extractedText.length < 20) {
+      // For scanned PDFs or images, provide helpful message
+      return `Document appears to be a scanned PDF or image-based document (${path.basename(filePath)}). 
+      Text extraction yielded minimal content. This may be a property listing image, floor plan, 
+      or scanned document that would require OCR processing for full text extraction.
+      
+      Limited extracted content: ${extractedText}`;
     }
     
     return extractedText;

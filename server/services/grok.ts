@@ -108,6 +108,13 @@ export async function extractPropertyDataFromPDF(extractedText: string, fileName
     } else {
       console.log(`Document length ${extractedText.length} chars (~${Math.ceil(extractedText.length / 4)}k tokens) fits within Grok 4's capacity`);
     }
+
+    // Check if this is a scanned document with minimal text
+    if (extractedText.includes("appears to be a scanned PDF") || extractedText.length < 100) {
+      console.log("Detected scanned/image-based document, adjusting extraction approach");
+      // For scanned documents, focus on what little text is available
+      processedText = extractedText;
+    }
     
     const prompt = `
 You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. You understand RealEstateCore (REC) ontology standards and semantic data modeling.
