@@ -125,8 +125,7 @@ export default function DocumentsPanel() {
           <div className="flex items-center space-x-4">
             <h2 className="text-lg font-semibold text-slate-900">Document Library</h2>
             <a 
-              href="/grok_access_simple.html" 
-              target="_blank"
+              href="/grok-responses" 
               className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
             >
               View All Grok Responses

@@ -33,8 +33,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <a 
-                href="/grok_access_simple.html" 
-                target="_blank"
+                href="/grok-responses" 
                 className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
               >
                 <FileText className="w-4 h-4 mr-2" />

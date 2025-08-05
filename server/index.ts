@@ -38,11 +38,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Serve static HTML files
-  app.get('/grok_access_simple.html', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'grok_access_simple.html'));
-  });
-
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
