@@ -32,6 +32,14 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <a 
+                href="/grok_access_simple.html" 
+                target="_blank"
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                View Full Grok Responses
+              </a>
               <span className="text-sm text-slate-600">Welcome, Admin</span>
               <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
                 <Settings className="w-5 h-5" />

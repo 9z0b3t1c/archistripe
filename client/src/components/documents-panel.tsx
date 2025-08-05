@@ -122,7 +122,16 @@ export default function DocumentsPanel() {
     <Card>
       <CardContent className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-900">Document Library</h2>
+          <div className="flex items-center space-x-4">
+            <h2 className="text-lg font-semibold text-slate-900">Document Library</h2>
+            <a 
+              href="/grok_access_simple.html" 
+              target="_blank"
+              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+            >
+              View All Grok Responses
+            </a>
+          </div>
           <div className="mt-4 sm:mt-0 flex space-x-3">
             <div className="relative">
               <Input
@@ -235,8 +244,29 @@ export default function DocumentsPanel() {
                           <Download className="w-4 h-4 mr-1" />
                           Download
                         </Button>
-                        {doc.propertyData?.fullGrokResponse && (
-                          <GrokResponseViewer document={doc} />
+                        {doc.propertyData?.rawExtractedData?.fullGrokResponse && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-900"
+                            onClick={() => {
+                              const grokResponse = doc.propertyData?.rawExtractedData?.fullGrokResponse;
+                              if (grokResponse) {
+                                const blob = new Blob([JSON.stringify(grokResponse, null, 2)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `grok_response_${doc.originalName}.json`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                              }
+                            }}
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Grok Response
+                          </Button>
                         )}
                         <Button
                           variant="ghost"
