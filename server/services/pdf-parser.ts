@@ -26,13 +26,18 @@ export async function extractTextFromPDF(filePath: string): Promise<string> {
         const pdfData = await pdfParse(buffer);
         let extractedText = pdfData.text.trim();
         
-        console.log(`PDF-parse extracted ${extractedText.length} characters`);
+        console.log(`PDF-parse extracted ${extractedText.length} characters from ${pdfData.numpages || 'unknown'} pages`);
         
-        if (extractedText.length > 50) {
+        // Also log metadata for debugging
+        if (pdfData.info) {
+          console.log(`PDF Info: Title="${pdfData.info.Title || 'N/A'}", Creator="${pdfData.info.Creator || 'N/A'}"`);
+        }
+        
+        if (extractedText.length > 20) {
           return extractedText;
         }
         
-        console.log("PDF-parse didn't extract enough text, trying fallback method...");
+        console.log("PDF-parse extracted minimal text, trying fallback method...");
       } catch (pdfParseError: any) {
         console.log("PDF-parse failed, trying fallback method:", pdfParseError?.message || "Unknown error");
       }

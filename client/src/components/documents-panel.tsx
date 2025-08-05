@@ -302,15 +302,22 @@ export default function DocumentsPanel() {
                   <h3 className="text-lg font-semibold text-slate-900 mb-4">Comprehensive Property Information</h3>
                   
                   {/* Check if this is a problematic document with no property data */}
-                  {selectedDocument.propertyData.documentType === 'pdf_metadata' && (
+                  {(selectedDocument.propertyData.documentType === 'pdf_metadata' || 
+                    selectedDocument.propertyData.documentType === 'graphical_document') && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
                       <div className="flex items-start gap-3">
                         <div className="text-amber-600 mt-0.5">⚠️</div>
                         <div>
-                          <h4 className="font-medium text-amber-800 text-sm">Limited Text Content Detected</h4>
+                          <h4 className="font-medium text-amber-800 text-sm">
+                            {selectedDocument.propertyData.documentType === 'graphical_document' 
+                              ? 'Graphical Document Detected' 
+                              : 'Limited Text Content Detected'}
+                          </h4>
                           <p className="text-sm text-amber-700 mt-1">
-                            This PDF appears to contain primarily images or scanned content. 
-                            For best results, please use PDFs with selectable text (listings, contracts, appraisals with text content).
+                            {selectedDocument.propertyData.documentType === 'graphical_document'
+                              ? 'This appears to be a floor plan, diagram, or primarily image-based document. The system cannot extract property data from graphical content.'
+                              : 'This PDF contains primarily images or scanned content. For best results, please use PDFs with selectable text.'}
+                            {' '}Try uploading property listings, contracts, or appraisals with readable text content.
                           </p>
                           {selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.notes && (
                             <p className="text-xs text-amber-600 mt-2 italic">
