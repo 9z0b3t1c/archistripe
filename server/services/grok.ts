@@ -6,37 +6,151 @@ const openai = new OpenAI({
 });
 
 interface ExtractedPropertyData {
+  // Basic Property Information
   address?: string;
   city?: string;
   state?: string;
   zipCode?: string;
+  county?: string;
+  neighborhood?: string;
+  
+  // Property Details
   price?: number;
+  listPrice?: number;
+  salePrice?: number;
+  rentPrice?: number;
+  pricePerSqFt?: number;
   squareFootage?: number;
+  lotSize?: number;
   bedrooms?: number;
   bathrooms?: number;
+  halfBaths?: number;
+  fullBaths?: number;
+  
+  // Property Features
   propertyType?: string;
+  buildingType?: string;
+  yearBuilt?: number;
+  stories?: number;
+  garage?: string;
+  parking?: string;
+  basement?: string;
+  attic?: string;
+  pool?: boolean;
+  fireplace?: boolean;
+  airConditioning?: string;
+  heating?: string;
+  
+  // Financial Information
+  taxes?: number;
+  hoa?: number;
+  insurance?: number;
+  utilities?: string;
+  financing?: string;
+  downPayment?: number;
+  mortgageRate?: number;
+  
+  // Legal & Ownership
+  mlsNumber?: string;
+  parcelId?: string;
+  legalDescription?: string;
+  ownerName?: string;
+  titleCompany?: string;
+  
+  // Dates & Timeline
+  listDate?: string;
+  saleDate?: string;
+  closeDate?: string;
+  contractDate?: string;
+  inspectionDate?: string;
+  appraisalDate?: string;
+  
+  // Condition & Features
+  condition?: string;
+  renovations?: string;
+  appliances?: string;
+  flooring?: string;
+  roofType?: string;
+  exteriorMaterial?: string;
+  
+  // Location Features
+  schoolDistrict?: string;
+  walkScore?: number;
+  nearbyAmenities?: string;
+  transportation?: string;
+  
+  // Document Classification
   documentType?: string;
+  documentSubtype?: string;
+  
   [key: string]: any;
 }
 
 export async function extractPropertyData(text: string): Promise<ExtractedPropertyData> {
   try {
     const prompt = `
-You are an expert real estate document parser. Analyze the following text from a real estate PDF document and extract structured property information.
+You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. Analyze the following text and extract ALL possible property information.
 
-Please extract the following fields if available:
-- address: Full property address
-- city: City name
-- state: State (use 2-letter abbreviation)
-- zipCode: ZIP/postal code
-- price: Property price (number only, no currency symbols)
-- squareFootage: Square footage (number only)
-- bedrooms: Number of bedrooms (integer)
-- bathrooms: Number of bathrooms (can be decimal like 2.5)
-- propertyType: Type of property (house, condo, apartment, townhouse, etc.)
-- documentType: Type of document (listing, contract, appraisal, inspection, etc.)
+EXTRACT ALL AVAILABLE INFORMATION FROM THESE CATEGORIES:
 
-Return only valid JSON with the extracted data. If a field cannot be determined, omit it from the response.
+**BASIC PROPERTY INFO:**
+- address: Complete property address
+- city, state, zipCode, county, neighborhood
+- mlsNumber, parcelId, legalDescription
+
+**PROPERTY DETAILS:**
+- price, listPrice, salePrice, rentPrice, pricePerSqFt
+- squareFootage, lotSize (in sq ft or acres)
+- bedrooms, bathrooms, halfBaths, fullBaths
+- propertyType (house, condo, townhouse, commercial, etc.)
+- buildingType, yearBuilt, stories
+
+**FEATURES & AMENITIES:**
+- garage (attached/detached/none), parking spaces
+- basement (finished/unfinished/none), attic
+- pool (boolean), fireplace (boolean)
+- airConditioning, heating systems
+- appliances, flooring types
+- roofType, exteriorMaterial
+
+**FINANCIAL INFORMATION:**
+- taxes (annual property taxes)
+- hoa (monthly HOA fees)
+- insurance, utilities costs
+- financing details, downPayment, mortgageRate
+
+**DATES & TIMELINE:**
+- listDate, saleDate, closeDate, contractDate
+- inspectionDate, appraisalDate
+- Any relevant dates in MM/DD/YYYY format
+
+**CONDITION & IMPROVEMENTS:**
+- condition (excellent, good, fair, needs work)
+- renovations, recent improvements
+- Any mentioned repairs or issues
+
+**LOCATION & COMMUNITY:**
+- schoolDistrict, walkScore
+- nearbyAmenities (parks, shopping, etc.)
+- transportation access
+
+**DOCUMENT CLASSIFICATION:**
+- documentType: listing, contract, appraisal, inspection, tax_record, deed, disclosure, etc.
+- documentSubtype: purchase_agreement, rental_lease, home_inspection, etc.
+
+**OWNERSHIP & LEGAL:**
+- ownerName, titleCompany
+- Any legal restrictions or easements
+
+INSTRUCTIONS:
+- Extract ALL information present, even if not explicitly requested
+- Use numbers without currency symbols or units
+- Use boolean true/false for yes/no features
+- If square footage is given as ranges, use the average
+- For dates, use MM/DD/YYYY format
+- For property types, use lowercase
+- If information is unclear but can be reasonably inferred, include it
+- Return comprehensive JSON with all found data
 
 Text to analyze:
 ${text}
@@ -47,7 +161,7 @@ ${text}
       messages: [
         {
           role: "system",
-          content: "You are a real estate document analysis expert. Extract property information from documents and return valid JSON."
+          content: "You are a comprehensive real estate document analysis expert. Extract ALL available property, financial, legal, and contextual information from any real estate document type. Be thorough and extract every detail that could be valuable for property analysis, valuation, or decision-making."
         },
         {
           role: "user",
@@ -55,44 +169,117 @@ ${text}
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 1000,
+      max_tokens: 2000,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
     
-    // Clean and validate the extracted data
+    // Clean and validate the extracted data comprehensively
     const cleanedData: ExtractedPropertyData = {};
     
-    if (result.address && typeof result.address === 'string') {
-      cleanedData.address = result.address.trim();
-    }
-    if (result.city && typeof result.city === 'string') {
-      cleanedData.city = result.city.trim();
-    }
-    if (result.state && typeof result.state === 'string') {
-      cleanedData.state = result.state.trim().toUpperCase();
-    }
-    if (result.zipCode) {
-      cleanedData.zipCode = String(result.zipCode).trim();
-    }
-    if (result.price && !isNaN(Number(result.price))) {
-      cleanedData.price = Number(result.price);
-    }
-    if (result.squareFootage && !isNaN(Number(result.squareFootage))) {
-      cleanedData.squareFootage = Number(result.squareFootage);
-    }
-    if (result.bedrooms && !isNaN(Number(result.bedrooms))) {
-      cleanedData.bedrooms = Math.floor(Number(result.bedrooms));
-    }
-    if (result.bathrooms && !isNaN(Number(result.bathrooms))) {
-      cleanedData.bathrooms = Number(result.bathrooms);
-    }
-    if (result.propertyType && typeof result.propertyType === 'string') {
-      cleanedData.propertyType = result.propertyType.toLowerCase().trim();
-    }
-    if (result.documentType && typeof result.documentType === 'string') {
-      cleanedData.documentType = result.documentType.toLowerCase().trim();
-    }
+    // Helper functions for data cleaning
+    const cleanString = (value: any): string | undefined => {
+      return value && typeof value === 'string' ? value.trim() : undefined;
+    };
+    
+    const cleanNumber = (value: any): number | undefined => {
+      if (value && !isNaN(Number(value))) return Number(value);
+      return undefined;
+    };
+    
+    const cleanBoolean = (value: any): boolean | undefined => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'string') {
+        const lower = value.toLowerCase().trim();
+        if (['yes', 'true', '1', 'on'].includes(lower)) return true;
+        if (['no', 'false', '0', 'off', 'none'].includes(lower)) return false;
+      }
+      return undefined;
+    };
+
+    // Basic Property Information
+    cleanedData.address = cleanString(result.address);
+    cleanedData.city = cleanString(result.city);
+    cleanedData.state = cleanString(result.state)?.toUpperCase();
+    cleanedData.zipCode = cleanString(result.zipCode);
+    cleanedData.county = cleanString(result.county);
+    cleanedData.neighborhood = cleanString(result.neighborhood);
+    
+    // Property Details
+    cleanedData.price = cleanNumber(result.price);
+    cleanedData.listPrice = cleanNumber(result.listPrice);
+    cleanedData.salePrice = cleanNumber(result.salePrice);
+    cleanedData.rentPrice = cleanNumber(result.rentPrice);
+    cleanedData.pricePerSqFt = cleanNumber(result.pricePerSqFt);
+    cleanedData.squareFootage = cleanNumber(result.squareFootage);
+    cleanedData.lotSize = cleanNumber(result.lotSize);
+    cleanedData.bedrooms = cleanNumber(result.bedrooms);
+    cleanedData.bathrooms = cleanNumber(result.bathrooms);
+    cleanedData.halfBaths = cleanNumber(result.halfBaths);
+    cleanedData.fullBaths = cleanNumber(result.fullBaths);
+    
+    // Property Features
+    cleanedData.propertyType = cleanString(result.propertyType)?.toLowerCase();
+    cleanedData.buildingType = cleanString(result.buildingType);
+    cleanedData.yearBuilt = cleanNumber(result.yearBuilt);
+    cleanedData.stories = cleanNumber(result.stories);
+    cleanedData.garage = cleanString(result.garage);
+    cleanedData.parking = cleanString(result.parking);
+    cleanedData.basement = cleanString(result.basement);
+    cleanedData.attic = cleanString(result.attic);
+    cleanedData.pool = cleanBoolean(result.pool);
+    cleanedData.fireplace = cleanBoolean(result.fireplace);
+    cleanedData.airConditioning = cleanString(result.airConditioning);
+    cleanedData.heating = cleanString(result.heating);
+    
+    // Financial Information
+    cleanedData.taxes = cleanNumber(result.taxes);
+    cleanedData.hoa = cleanNumber(result.hoa);
+    cleanedData.insurance = cleanNumber(result.insurance);
+    cleanedData.utilities = cleanString(result.utilities);
+    cleanedData.financing = cleanString(result.financing);
+    cleanedData.downPayment = cleanNumber(result.downPayment);
+    cleanedData.mortgageRate = cleanNumber(result.mortgageRate);
+    
+    // Legal & Ownership
+    cleanedData.mlsNumber = cleanString(result.mlsNumber);
+    cleanedData.parcelId = cleanString(result.parcelId);
+    cleanedData.legalDescription = cleanString(result.legalDescription);
+    cleanedData.ownerName = cleanString(result.ownerName);
+    cleanedData.titleCompany = cleanString(result.titleCompany);
+    
+    // Dates & Timeline
+    cleanedData.listDate = cleanString(result.listDate);
+    cleanedData.saleDate = cleanString(result.saleDate);
+    cleanedData.closeDate = cleanString(result.closeDate);
+    cleanedData.contractDate = cleanString(result.contractDate);
+    cleanedData.inspectionDate = cleanString(result.inspectionDate);
+    cleanedData.appraisalDate = cleanString(result.appraisalDate);
+    
+    // Condition & Features
+    cleanedData.condition = cleanString(result.condition);
+    cleanedData.renovations = cleanString(result.renovations);
+    cleanedData.appliances = cleanString(result.appliances);
+    cleanedData.flooring = cleanString(result.flooring);
+    cleanedData.roofType = cleanString(result.roofType);
+    cleanedData.exteriorMaterial = cleanString(result.exteriorMaterial);
+    
+    // Location Features
+    cleanedData.schoolDistrict = cleanString(result.schoolDistrict);
+    cleanedData.walkScore = cleanNumber(result.walkScore);
+    cleanedData.nearbyAmenities = cleanString(result.nearbyAmenities);
+    cleanedData.transportation = cleanString(result.transportation);
+    
+    // Document Classification
+    cleanedData.documentType = cleanString(result.documentType)?.toLowerCase();
+    cleanedData.documentSubtype = cleanString(result.documentSubtype)?.toLowerCase();
+    
+    // Include any additional fields that weren't explicitly handled
+    Object.keys(result).forEach(key => {
+      if (!(key in cleanedData) && result[key] !== null && result[key] !== undefined) {
+        cleanedData[key] = result[key];
+      }
+    });
 
     return cleanedData;
   } catch (error) {

@@ -298,59 +298,271 @@ export default function DocumentsPanel() {
 
               {/* Property Data */}
               {selectedDocument.propertyData && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Extracted Property Information</h3>
+                <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Comprehensive Property Information</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {selectedDocument.propertyData.address && (
-                      <div className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-slate-600">Address</div>
-                        <div className="text-sm">
-                          {selectedDocument.propertyData.address}
-                          {selectedDocument.propertyData.city && `, ${selectedDocument.propertyData.city}`}
-                          {selectedDocument.propertyData.state && `, ${selectedDocument.propertyData.state}`}
-                          {selectedDocument.propertyData.zipCode && ` ${selectedDocument.propertyData.zipCode}`}
+                  {/* Basic Property Info */}
+                  <div className="bg-slate-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-slate-800 mb-2 text-sm">Basic Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                      {selectedDocument.propertyData.address && (
+                        <div>
+                          <span className="font-medium text-slate-600">Address:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.address}</span>
                         </div>
-                      </div>
-                    )}
-                    
-                    {selectedDocument.propertyData.price && (
-                      <div className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-slate-600">Price</div>
-                        <div className="text-sm font-semibold text-green-600">
-                          ${selectedDocument.propertyData.price}
+                      )}
+                      {selectedDocument.propertyData.city && (
+                        <div>
+                          <span className="font-medium text-slate-600">City:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.city}</span>
                         </div>
-                      </div>
-                    )}
-                    
-                    {selectedDocument.propertyData.squareFootage && (
-                      <div className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-slate-600">Square Footage</div>
-                        <div className="text-sm">{selectedDocument.propertyData.squareFootage} sq ft</div>
-                      </div>
-                    )}
-                    
-                    {selectedDocument.propertyData.bedrooms && (
-                      <div className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-slate-600">Bedrooms</div>
-                        <div className="text-sm">{selectedDocument.propertyData.bedrooms}</div>
-                      </div>
-                    )}
-                    
-                    {selectedDocument.propertyData.bathrooms && (
-                      <div className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-slate-600">Bathrooms</div>
-                        <div className="text-sm">{selectedDocument.propertyData.bathrooms}</div>
-                      </div>
-                    )}
-                    
-                    {selectedDocument.propertyData.propertyType && (
-                      <div className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-slate-600">Property Type</div>
-                        <div className="text-sm capitalize">{selectedDocument.propertyData.propertyType}</div>
-                      </div>
-                    )}
+                      )}
+                      {selectedDocument.propertyData.state && (
+                        <div>
+                          <span className="font-medium text-slate-600">State:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.state}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.zipCode && (
+                        <div>
+                          <span className="font-medium text-slate-600">ZIP:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.zipCode}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.county && (
+                        <div>
+                          <span className="font-medium text-slate-600">County:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.county}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.neighborhood && (
+                        <div>
+                          <span className="font-medium text-slate-600">Neighborhood:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.neighborhood}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Property Details */}
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-slate-800 mb-2 text-sm">Property Details</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                      {selectedDocument.propertyData.propertyType && (
+                        <div>
+                          <span className="font-medium text-slate-600">Type:</span>
+                          <span className="text-slate-900 ml-1 capitalize">{selectedDocument.propertyData.propertyType}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.yearBuilt && (
+                        <div>
+                          <span className="font-medium text-slate-600">Built:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.yearBuilt}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.squareFootage && (
+                        <div>
+                          <span className="font-medium text-slate-600">Sq Ft:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.squareFootage.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.bedrooms && (
+                        <div>
+                          <span className="font-medium text-slate-600">Bedrooms:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.bedrooms}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.bathrooms && (
+                        <div>
+                          <span className="font-medium text-slate-600">Bathrooms:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.bathrooms}</span>
+                        </div>
+                      )}
+                      {selectedDocument.propertyData.lotSize && (
+                        <div>
+                          <span className="font-medium text-slate-600">Lot Size:</span>
+                          <span className="text-slate-900 ml-1">{selectedDocument.propertyData.lotSize.toLocaleString()} sq ft</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Financial Information */}
+                  {(selectedDocument.propertyData.price || selectedDocument.propertyData.listPrice || selectedDocument.propertyData.taxes || selectedDocument.propertyData.hoa) && (
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-slate-800 mb-2 text-sm">Financial Information</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        {selectedDocument.propertyData.price && (
+                          <div>
+                            <span className="font-medium text-slate-600">Price:</span>
+                            <span className="text-slate-900 ml-1 font-semibold">${selectedDocument.propertyData.price.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.listPrice && (
+                          <div>
+                            <span className="font-medium text-slate-600">List Price:</span>
+                            <span className="text-slate-900 ml-1">${selectedDocument.propertyData.listPrice.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.salePrice && (
+                          <div>
+                            <span className="font-medium text-slate-600">Sale Price:</span>
+                            <span className="text-slate-900 ml-1">${selectedDocument.propertyData.salePrice.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.taxes && (
+                          <div>
+                            <span className="font-medium text-slate-600">Taxes:</span>
+                            <span className="text-slate-900 ml-1">${selectedDocument.propertyData.taxes.toLocaleString()}/yr</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.hoa && (
+                          <div>
+                            <span className="font-medium text-slate-600">HOA:</span>
+                            <span className="text-slate-900 ml-1">${selectedDocument.propertyData.hoa}/mo</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.pricePerSqFt && (
+                          <div>
+                            <span className="font-medium text-slate-600">$/Sq Ft:</span>
+                            <span className="text-slate-900 ml-1">${selectedDocument.propertyData.pricePerSqFt}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Features & Amenities */}
+                  {(selectedDocument.propertyData.garage || selectedDocument.propertyData.pool !== undefined || selectedDocument.propertyData.fireplace !== undefined || selectedDocument.propertyData.basement) && (
+                    <div className="bg-purple-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-slate-800 mb-2 text-sm">Features & Amenities</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        {selectedDocument.propertyData.garage && (
+                          <div>
+                            <span className="font-medium text-slate-600">Garage:</span>
+                            <span className="text-slate-900 ml-1 capitalize">{selectedDocument.propertyData.garage}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.basement && (
+                          <div>
+                            <span className="font-medium text-slate-600">Basement:</span>
+                            <span className="text-slate-900 ml-1 capitalize">{selectedDocument.propertyData.basement}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.pool !== undefined && (
+                          <div>
+                            <span className="font-medium text-slate-600">Pool:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.pool ? 'Yes' : 'No'}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.fireplace !== undefined && (
+                          <div>
+                            <span className="font-medium text-slate-600">Fireplace:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.fireplace ? 'Yes' : 'No'}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.airConditioning && (
+                          <div>
+                            <span className="font-medium text-slate-600">AC:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.airConditioning}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.heating && (
+                          <div>
+                            <span className="font-medium text-slate-600">Heating:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.heating}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Legal & ID Information */}
+                  {(selectedDocument.propertyData.mlsNumber || selectedDocument.propertyData.parcelId || selectedDocument.propertyData.ownerName) && (
+                    <div className="bg-orange-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-slate-800 mb-2 text-sm">Legal & Identification</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        {selectedDocument.propertyData.mlsNumber && (
+                          <div>
+                            <span className="font-medium text-slate-600">MLS:</span>
+                            <span className="text-slate-900 ml-1 font-mono">{selectedDocument.propertyData.mlsNumber}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.parcelId && (
+                          <div>
+                            <span className="font-medium text-slate-600">Parcel ID:</span>
+                            <span className="text-slate-900 ml-1 font-mono">{selectedDocument.propertyData.parcelId}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.ownerName && (
+                          <div>
+                            <span className="font-medium text-slate-600">Owner:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.ownerName}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dates & Timeline */}
+                  {(selectedDocument.propertyData.listDate || selectedDocument.propertyData.saleDate || selectedDocument.propertyData.closeDate) && (
+                    <div className="bg-indigo-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-slate-800 mb-2 text-sm">Timeline</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        {selectedDocument.propertyData.listDate && (
+                          <div>
+                            <span className="font-medium text-slate-600">Listed:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.listDate}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.saleDate && (
+                          <div>
+                            <span className="font-medium text-slate-600">Sold:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.saleDate}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.closeDate && (
+                          <div>
+                            <span className="font-medium text-slate-600">Closed:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.closeDate}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.inspectionDate && (
+                          <div>
+                            <span className="font-medium text-slate-600">Inspection:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.inspectionDate}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Info */}
+                  {(selectedDocument.propertyData.condition || selectedDocument.propertyData.schoolDistrict || selectedDocument.propertyData.walkScore) && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-slate-800 mb-2 text-sm">Additional Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        {selectedDocument.propertyData.condition && (
+                          <div>
+                            <span className="font-medium text-slate-600">Condition:</span>
+                            <span className="text-slate-900 ml-1 capitalize">{selectedDocument.propertyData.condition}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.schoolDistrict && (
+                          <div>
+                            <span className="font-medium text-slate-600">School District:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.schoolDistrict}</span>
+                          </div>
+                        )}
+                        {selectedDocument.propertyData.walkScore && (
+                          <div>
+                            <span className="font-medium text-slate-600">Walk Score:</span>
+                            <span className="text-slate-900 ml-1">{selectedDocument.propertyData.walkScore}/100</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
