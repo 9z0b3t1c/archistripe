@@ -1,0 +1,22 @@
+PROPERTY LISTING
+
+Address: 456 Pine Street, Denver, CO 80202
+Price: $850,000
+Square Footage: 2,800 sq ft
+Bedrooms: 4
+Bathrooms: 3.5
+Property Type: Single Family Home
+Year Built: 1995
+
+Features:
+- Updated kitchen with granite countertops
+- Hardwood floors throughout
+- Master suite with walk-in closet
+- Two-car garage
+- Fenced backyard
+
+Contact: Jane Smith, Realtor
+Phone: (555) 123-4567
+Email: jane@realestate.com
+
+MLS #: 987654321
