@@ -21,7 +21,7 @@ This is a full-stack real estate document parser application that allows users t
 - ✅ Increased extraction scope to include: financial details, legal information, dates/timeline, features/amenities, condition, location data, and document classification
 - ✅ **SIMPLIFIED PROCESSING**: Removed complex PDF-to-vision approach, using optimized text extraction + enhanced Grok text analysis for maximum compatibility and reliability
 - ✅ **REALESTATECORE INTEGRATION**: Implemented Phase 1 of REC ontology support with JSON-LD generation, semantic classification, and standardized data structure transformation
-- ✅ **MODEL UPGRADE TO GROK 4**: Upgraded from Grok 2 to Grok 4 with 256k token capacity (vs 131k), enabling 500k character document processing with robust token limit handling
+- ✅ **MODEL UPGRADE TO GROK 4**: Upgraded from Grok 2 to Grok 4 with 256k token capacity (vs 131k), with emergency-level truncation (150k chars) to handle high-density token documents
 
 # User Preferences
 
