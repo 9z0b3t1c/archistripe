@@ -29,6 +29,7 @@ export const propertyData = pgTable("property_data", {
   propertyType: text("property_type"), // house, condo, apartment, etc.
   documentType: text("document_type"), // listing, contract, appraisal, etc.
   rawExtractedData: jsonb("raw_extracted_data"),
+  recData: jsonb("rec_data"), // RealEstateCore JSON-LD structure
   extractedAt: timestamp("extracted_at").defaultNow(),
 });
 

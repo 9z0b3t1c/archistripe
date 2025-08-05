@@ -7,7 +7,7 @@ const openai = new OpenAI({
   apiKey: process.env.XAI_API_KEY || process.env.GROK_API_KEY || "your-api-key-here"
 });
 
-interface ExtractedPropertyData {
+export interface ExtractedPropertyData {
   // Basic Property Information
   address?: string;
   city?: string;
@@ -92,9 +92,11 @@ export async function extractPropertyDataFromPDF(extractedText: string, fileName
   try {
     
     const prompt = `
-You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. Analyze the following text extracted from a PDF document and extract ALL possible property information.
+You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. You understand RealEstateCore (REC) ontology standards and semantic data modeling.
 
-EXTRACT ALL AVAILABLE INFORMATION FROM THESE CATEGORIES:
+Analyze the following text extracted from a PDF document and extract ALL possible property information, organizing it according to RealEstateCore ontology principles where applicable.
+
+EXTRACT ALL AVAILABLE INFORMATION FROM THESE CATEGORIES (with REC ontology alignment):
 
 **BASIC PROPERTY INFO:**
 - address: Complete property address
@@ -141,6 +143,12 @@ EXTRACT ALL AVAILABLE INFORMATION FROM THESE CATEGORIES:
 - documentType: listing, contract, appraisal, inspection, tax_record, deed, disclosure, etc.
 - documentSubtype: purchase_agreement, rental_lease, home_inspection, etc.
 
+**REALESTATECORE SEMANTIC CLASSIFICATION:**
+- recBuildingType: single_family_house, apartment, office_building, retail, industrial, etc.
+- recSpaceTypes: room types following REC taxonomy (bedroom, bathroom, kitchen, living_room, etc.)
+- recAssetTypes: equipment and systems (hvac_system, electrical_system, plumbing_system, etc.)
+- recCapabilities: sensing/control capabilities if mentioned (temperature_sensor, lighting_control, etc.)
+
 **OWNERSHIP & LEGAL:**
 - ownerName, titleCompany
 - Any legal restrictions or easements
@@ -153,7 +161,10 @@ INSTRUCTIONS:
 - For dates, use MM/DD/YYYY format
 - For property types, use lowercase
 - If information is unclear but can be reasonably inferred, include it
-- Return comprehensive JSON with all found data
+- Include RealEstateCore semantic classifications where applicable
+- Organize spatial hierarchy (building → floors → rooms) when determinable
+- Identify equipment/systems as separate entities from spaces
+- Return comprehensive JSON with all found data AND REC-compatible structure
 
 Document filename: ${fileName}
 

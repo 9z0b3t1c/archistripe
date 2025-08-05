@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs";
 import { extractPropertyDataFromPDF } from "./services/grok";
 import { extractTextFromPDF, deleteTempFile } from "./services/pdf-parser";
+import { transformToREC, validateRECData } from "./services/rec-transformer";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -210,6 +211,14 @@ async function processDocumentAsync(documentId: string, filePath: string) {
     const propertyData = await extractPropertyDataFromPDF(extractedText, originalFileName);
     console.log(`Extracted property data:`, propertyData);
 
+    // Transform to RealEstateCore JSON-LD structure
+    const recData = transformToREC(propertyData, documentId, originalFileName);
+    console.log(`REC JSON-LD structure:`, JSON.stringify(recData, null, 2));
+
+    // Validate REC data structure
+    const isValidREC = validateRECData(recData);
+    console.log(`REC validation result: ${isValidREC}`);
+
     // Save extracted property data with all new comprehensive fields
     await storage.createPropertyData({
       documentId,
@@ -224,10 +233,12 @@ async function processDocumentAsync(documentId: string, filePath: string) {
       propertyType: propertyData.propertyType || null,
       documentType: propertyData.documentType || null,
       rawExtractedData: { 
-        processingMethod: 'grok-vision-direct', 
+        processingMethod: 'enhanced-grok-text-analysis', 
         fileName: originalFileName,
+        extractedText: extractedText.substring(0, 500) + '...',
         ...propertyData 
       },
+      recData: recData, // RealEstateCore JSON-LD structure
     });
 
     // Update document status to completed
