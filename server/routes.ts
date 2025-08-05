@@ -60,21 +60,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      // Parse processing options from form data
-      let processingOptions = {
+      // All processing options are now always enabled
+      const processingOptions = {
         extractPropertyDetails: true,
         parseFinancialInfo: true,
         identifyDocumentType: true,
-        generateSummary: false,
+        generateSummary: true,
       };
-
-      if (req.body.processingOptions) {
-        try {
-          processingOptions = JSON.parse(req.body.processingOptions);
-        } catch (error) {
-          console.warn("Failed to parse processing options, using defaults");
-        }
-      }
 
       // Create document record
       const document = await storage.createDocument({

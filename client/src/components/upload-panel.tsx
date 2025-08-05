@@ -12,12 +12,13 @@ import FileUpload from "@/components/ui/file-upload";
 import type { Document } from "@shared/schema";
 
 export default function UploadPanel() {
-  const [processingOptions, setProcessingOptions] = useState({
+  // Processing options are now always enabled
+  const processingOptions = {
     extractPropertyDetails: true,
     parseFinancialInfo: true,
     identifyDocumentType: true,
-    generateSummary: false,
-  });
+    generateSummary: true,
+  };
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -118,69 +119,25 @@ export default function UploadPanel() {
               multiple
             />
 
-            {/* Processing Options */}
-            <div className="mt-6 space-y-4">
-              <h3 className="text-md font-medium text-slate-900">Processing Options</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Processing Features Info */}
+            <div className="mt-6 p-4 bg-slate-50 rounded-lg">
+              <h3 className="text-sm font-medium text-slate-900 mb-2">AI Processing Features</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
                 <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="extractPropertyDetails"
-                    checked={processingOptions.extractPropertyDetails}
-                    onCheckedChange={(checked) =>
-                      setProcessingOptions(prev => ({
-                        ...prev,
-                        extractPropertyDetails: checked as boolean,
-                      }))
-                    }
-                  />
-                  <label htmlFor="extractPropertyDetails" className="text-sm text-slate-700">
-                    Extract property details
-                  </label>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Property details extraction</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="parseFinancialInfo"
-                    checked={processingOptions.parseFinancialInfo}
-                    onCheckedChange={(checked) =>
-                      setProcessingOptions(prev => ({
-                        ...prev,
-                        parseFinancialInfo: checked as boolean,
-                      }))
-                    }
-                  />
-                  <label htmlFor="parseFinancialInfo" className="text-sm text-slate-700">
-                    Parse financial information
-                  </label>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Financial information parsing</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="identifyDocumentType"
-                    checked={processingOptions.identifyDocumentType}
-                    onCheckedChange={(checked) =>
-                      setProcessingOptions(prev => ({
-                        ...prev,
-                        identifyDocumentType: checked as boolean,
-                      }))
-                    }
-                  />
-                  <label htmlFor="identifyDocumentType" className="text-sm text-slate-700">
-                    Identify document type
-                  </label>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Document type identification</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="generateSummary"
-                    checked={processingOptions.generateSummary}
-                    onCheckedChange={(checked) =>
-                      setProcessingOptions(prev => ({
-                        ...prev,
-                        generateSummary: checked as boolean,
-                      }))
-                    }
-                  />
-                  <label htmlFor="generateSummary" className="text-sm text-slate-700">
-                    Generate summary
-                  </label>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Summary generation</span>
                 </div>
               </div>
             </div>

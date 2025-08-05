@@ -27,6 +27,7 @@ This is a full-stack real estate document parser application that allows users t
 
 Preferred communication style: Simple, everyday language.
 Data Architecture Preference: Interested in using RealEstateCore ontology instead of traditional database schema for enhanced standardization and interoperability.
+Processing Options: All AI processing features should be "always on" without user interface controls for toggling (property details, financial info, document classification, summary generation).
 
 # System Architecture
 
