@@ -1,8 +1,18 @@
 import * as fs from "fs";
 import * as path from "path";
-const pdfParse = require("pdf-parse");
 
-// Advanced PDF text extraction using pdf-parse library
+// Dynamic import for pdf-parse to avoid ES module conflicts
+async function getPdfParse() {
+  try {
+    const pdfParse = await import("pdf-parse");
+    return pdfParse.default;
+  } catch (error) {
+    console.log("PDF-parse not available, using fallback method");
+    return null;
+  }
+}
+
+// Advanced PDF text extraction with fallback parsing
 export async function extractTextFromPDF(filePath: string): Promise<string> {
   try {
     const buffer = await fs.promises.readFile(filePath);
@@ -10,19 +20,22 @@ export async function extractTextFromPDF(filePath: string): Promise<string> {
     console.log(`Attempting to extract text from PDF: ${path.basename(filePath)}`);
     
     // Try pdf-parse first for proper PDF parsing
-    try {
-      const pdfData = await pdfParse(buffer);
-      let extractedText = pdfData.text.trim();
-      
-      console.log(`PDF-parse extracted ${extractedText.length} characters`);
-      
-      if (extractedText.length > 50) {
-        return extractedText;
+    const pdfParse = await getPdfParse();
+    if (pdfParse) {
+      try {
+        const pdfData = await pdfParse(buffer);
+        let extractedText = pdfData.text.trim();
+        
+        console.log(`PDF-parse extracted ${extractedText.length} characters`);
+        
+        if (extractedText.length > 50) {
+          return extractedText;
+        }
+        
+        console.log("PDF-parse didn't extract enough text, trying fallback method...");
+      } catch (pdfParseError: any) {
+        console.log("PDF-parse failed, trying fallback method:", pdfParseError?.message || "Unknown error");
       }
-      
-      console.log("PDF-parse didn't extract enough text, trying fallback method...");
-    } catch (pdfParseError: any) {
-      console.log("PDF-parse failed, trying fallback method:", pdfParseError?.message || "Unknown error");
     }
     
     // Fallback: Basic PDF text extraction using regex patterns

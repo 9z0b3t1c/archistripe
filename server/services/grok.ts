@@ -109,11 +109,22 @@ export async function extractPropertyDataFromPDF(extractedText: string, fileName
       console.log(`Document length ${extractedText.length} chars (~${Math.ceil(extractedText.length / 4)}k tokens) fits within Grok 4's capacity`);
     }
 
-    // Check if this is a scanned document with minimal text
-    if (extractedText.includes("appears to be a scanned PDF") || extractedText.length < 100) {
-      console.log("Detected scanned/image-based document, adjusting extraction approach");
-      // For scanned documents, focus on what little text is available
-      processedText = extractedText;
+    // Check if this is a PDF with metadata instead of readable content
+    if (extractedText.includes("appears to be a scanned PDF") || 
+        extractedText.includes("/Metadata") || 
+        extractedText.includes("/OutputIntents") ||
+        extractedText.length < 100) {
+      console.log("Detected PDF with minimal readable content, providing specialized handling");
+      processedText = `This document appears to contain primarily PDF metadata or structural information rather than readable text content. 
+      The extracted content includes technical PDF elements like: ${extractedText.substring(0, 200)}
+      
+      This suggests the document may be:
+      1. A scanned image-based PDF requiring OCR
+      2. A form or template with minimal text
+      3. A graphical document (charts, diagrams, floor plans)
+      4. A PDF with rendering issues
+      
+      Please extract any available property information from the limited content, or indicate if this document type cannot be processed for property data extraction.`;
     }
     
     const prompt = `

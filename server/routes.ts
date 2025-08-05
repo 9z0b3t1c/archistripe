@@ -219,19 +219,24 @@ async function processDocumentAsync(documentId: string, filePath: string) {
     const isValidREC = validateRECData(recData);
     console.log(`REC validation result: ${isValidREC}`);
 
-    // Save extracted property data with all new comprehensive fields
+    // Extract values from nested structure for flat database fields
+    const basicInfo = (propertyData as any).basicPropertyInfo || {};
+    const details = (propertyData as any).propertyDetails || {};
+    const classification = (propertyData as any).documentClassification || {};
+
+    // Save extracted property data with all comprehensive fields
     await storage.createPropertyData({
       documentId,
-      address: propertyData.address || null,
-      city: propertyData.city || null,
-      state: propertyData.state || null,
-      zipCode: propertyData.zipCode || null,
-      price: propertyData.price ? propertyData.price.toString() : null,
-      squareFootage: propertyData.squareFootage || null,
-      bedrooms: propertyData.bedrooms || null,
-      bathrooms: propertyData.bathrooms ? propertyData.bathrooms.toString() : null,
-      propertyType: propertyData.propertyType || null,
-      documentType: propertyData.documentType || null,
+      address: basicInfo.address || propertyData.address || null,
+      city: basicInfo.city || propertyData.city || null,
+      state: basicInfo.state || propertyData.state || null,
+      zipCode: basicInfo.zipCode || propertyData.zipCode || null,
+      price: details.price || details.listPrice || propertyData.price ? (details.price || details.listPrice || propertyData.price).toString() : null,
+      squareFootage: details.squareFootage || propertyData.squareFootage || null,
+      bedrooms: details.bedrooms || propertyData.bedrooms || null,
+      bathrooms: details.bathrooms || propertyData.bathrooms ? (details.bathrooms || propertyData.bathrooms).toString() : null,
+      propertyType: details.propertyType || propertyData.propertyType || null,
+      documentType: classification.documentType || propertyData.documentType || null,
       rawExtractedData: { 
         processingMethod: 'enhanced-grok-text-analysis', 
         fileName: originalFileName,
