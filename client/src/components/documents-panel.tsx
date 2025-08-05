@@ -301,6 +301,27 @@ export default function DocumentsPanel() {
                 <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
                   <h3 className="text-lg font-semibold text-slate-900 mb-4">Comprehensive Property Information</h3>
                   
+                  {/* Check if this is a problematic document with no property data */}
+                  {selectedDocument.propertyData.documentType === 'pdf_metadata' && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-start gap-3">
+                        <div className="text-amber-600 mt-0.5">⚠️</div>
+                        <div>
+                          <h4 className="font-medium text-amber-800 text-sm">Limited Text Content Detected</h4>
+                          <p className="text-sm text-amber-700 mt-1">
+                            This PDF appears to contain primarily images or scanned content. 
+                            For best results, please use PDFs with selectable text (listings, contracts, appraisals with text content).
+                          </p>
+                          {selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.notes && (
+                            <p className="text-xs text-amber-600 mt-2 italic">
+                              {selectedDocument.propertyData.rawExtractedData.additionalExtractedInfo.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Basic Property Info */}
                   <div className="bg-slate-50 p-3 rounded-lg">
                     <h4 className="font-medium text-slate-800 mb-2 text-sm">Basic Information</h4>
