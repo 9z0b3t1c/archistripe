@@ -194,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // Process document asynchronously
 async function processDocumentAsync(documentId: string, filePath: string) {
   try {
-    console.log(`Starting to process document ${documentId} with enhanced Grok analysis + RealEstateCore integration`);
+    console.log(`Starting to process document ${documentId} with Grok 4 (256k tokens) + RealEstateCore integration`);
     
     // Update status to processing
     await storage.updateDocumentStatus(documentId, "processing");
@@ -247,7 +247,7 @@ async function processDocumentAsync(documentId: string, filePath: string) {
     // Clean up temp file
     await deleteTempFile(filePath);
     
-    console.log(`Successfully processed document ${documentId} using enhanced Grok analysis with RealEstateCore semantic modeling`);
+    console.log(`Successfully processed document ${documentId} using Grok 4 with enhanced context + RealEstateCore semantic modeling`);
 
   } catch (error) {
     console.error("Processing error:", error);

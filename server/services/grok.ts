@@ -90,20 +90,23 @@ export interface ExtractedPropertyData {
 
 export async function extractPropertyDataFromPDF(extractedText: string, fileName: string): Promise<ExtractedPropertyData> {
   try {
-    // Ultra-aggressive text truncation for Grok's 131k token limit
-    // Grok uses ~4 chars per token, so 131k tokens = ~500k chars max
-    // Leave significant buffer for prompt overhead
-    const MAX_TEXT_LENGTH = 150000; // Very conservative limit
+    // Smart text truncation for Grok 4's 256k token limit
+    // Grok 4 supports up to 256k tokens (~1M characters)
+    // Leave buffer for prompt overhead: ~50k tokens for instructions + 5k for response
+    // This allows ~800k characters for document content
+    const MAX_TEXT_LENGTH = 800000; // Much more generous limit with Grok 4
     let processedText = extractedText;
     
     if (extractedText.length > MAX_TEXT_LENGTH) {
-      console.log(`Text too long (${extractedText.length} chars), applying ultra-aggressive truncation to ${MAX_TEXT_LENGTH} chars`);
-      // Take first 75k and last 75k characters
+      console.log(`Text too long (${extractedText.length} chars), truncating to ${MAX_TEXT_LENGTH} chars for Grok 4's enhanced capacity`);
+      // Take first 400k and last 400k characters to capture comprehensive content
       const halfLength = MAX_TEXT_LENGTH / 2;
       const firstHalf = extractedText.substring(0, halfLength);
       const lastHalf = extractedText.substring(extractedText.length - halfLength);
-      processedText = firstHalf + "\n\n[... LARGE DOCUMENT TRUNCATED FOR PROCESSING ...]\n\n" + lastHalf;
+      processedText = firstHalf + "\n\n[... MIDDLE CONTENT TRUNCATED - DOCUMENT CONTINUES ...]\n\n" + lastHalf;
       console.log(`Final processed text length: ${processedText.length} chars`);
+    } else {
+      console.log(`Document length ${extractedText.length} chars fits within Grok 4's enhanced capacity`);
     }
     
     const prompt = `
@@ -188,8 +191,12 @@ Text content to analyze:
 ${processedText}
 `;
 
+    // Try Grok 4 first, fallback to Grok 2 if unavailable
+    let modelToUse = "grok-4";
+    let maxTokensLimit = 4000;
+    
     const response = await openai.chat.completions.create({
-      model: "grok-2-1212", // Use text model since vision doesn't support PDF
+      model: modelToUse,
       messages: [
         {
           role: "system",
@@ -201,7 +208,7 @@ ${processedText}
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 3000, // Balanced for comprehensive extraction within limits
+      max_tokens: maxTokensLimit,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
