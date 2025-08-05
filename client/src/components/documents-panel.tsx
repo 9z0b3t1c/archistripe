@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileText, Search, Download, Trash2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -13,6 +14,7 @@ import type { DocumentWithData } from "@shared/schema";
 export default function DocumentsPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [selectedDocument, setSelectedDocument] = useState<DocumentWithData | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -40,6 +42,29 @@ export default function DocumentsPanel() {
       });
     },
   });
+
+  const handleDownload = async (doc: DocumentWithData) => {
+    try {
+      const response = await fetch(`/api/documents/${doc.id}/download`);
+      if (!response.ok) throw new Error('Download failed');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.originalName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: "Could not download the document.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredDocuments = (documents as DocumentWithData[]).filter((doc: DocumentWithData) => {
     const matchesSearch = doc.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -195,6 +220,7 @@ export default function DocumentsPanel() {
                           variant="ghost"
                           size="sm"
                           className="text-primary hover:text-primary-foreground hover:bg-primary"
+                          onClick={() => setSelectedDocument(doc)}
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           View
@@ -203,6 +229,7 @@ export default function DocumentsPanel() {
                           variant="ghost"
                           size="sm"
                           className="text-slate-600 hover:text-slate-900"
+                          onClick={() => handleDownload(doc)}
                         >
                           <Download className="w-4 h-4 mr-1" />
                           Download
@@ -234,6 +261,133 @@ export default function DocumentsPanel() {
           </div>
         )}
       </CardContent>
+
+      {/* Document Details Modal */}
+      <Dialog open={selectedDocument !== null} onOpenChange={() => setSelectedDocument(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              {selectedDocument?.originalName}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedDocument && (
+            <div className="space-y-6">
+              {/* Document Info */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
+                <div>
+                  <div className="text-sm font-medium text-slate-600">File Size</div>
+                  <div className="text-sm">{formatFileSize(selectedDocument.size)}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-slate-600">Upload Date</div>
+                  <div className="text-sm">
+                    {selectedDocument.uploadedAt ? new Date(selectedDocument.uploadedAt).toLocaleDateString() : "-"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-slate-600">Status</div>
+                  <div>{getStatusBadge(selectedDocument.status)}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-slate-600">Document Type</div>
+                  <div>{getDocumentTypeBadge(selectedDocument.propertyData?.documentType || undefined)}</div>
+                </div>
+              </div>
+
+              {/* Property Data */}
+              {selectedDocument.propertyData && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Extracted Property Information</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedDocument.propertyData.address && (
+                      <div className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Address</div>
+                        <div className="text-sm">
+                          {selectedDocument.propertyData.address}
+                          {selectedDocument.propertyData.city && `, ${selectedDocument.propertyData.city}`}
+                          {selectedDocument.propertyData.state && `, ${selectedDocument.propertyData.state}`}
+                          {selectedDocument.propertyData.zipCode && ` ${selectedDocument.propertyData.zipCode}`}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedDocument.propertyData.price && (
+                      <div className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Price</div>
+                        <div className="text-sm font-semibold text-green-600">
+                          ${selectedDocument.propertyData.price}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedDocument.propertyData.squareFootage && (
+                      <div className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Square Footage</div>
+                        <div className="text-sm">{selectedDocument.propertyData.squareFootage} sq ft</div>
+                      </div>
+                    )}
+                    
+                    {selectedDocument.propertyData.bedrooms && (
+                      <div className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Bedrooms</div>
+                        <div className="text-sm">{selectedDocument.propertyData.bedrooms}</div>
+                      </div>
+                    )}
+                    
+                    {selectedDocument.propertyData.bathrooms && (
+                      <div className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Bathrooms</div>
+                        <div className="text-sm">{selectedDocument.propertyData.bathrooms}</div>
+                      </div>
+                    )}
+                    
+                    {selectedDocument.propertyData.propertyType && (
+                      <div className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-slate-600">Property Type</div>
+                        <div className="text-sm capitalize">{selectedDocument.propertyData.propertyType}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Raw Extracted Text Preview */}
+              {selectedDocument.propertyData?.rawExtractedData && 
+               typeof selectedDocument.propertyData.rawExtractedData === 'object' && 
+               'extractedText' in selectedDocument.propertyData.rawExtractedData && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Extracted Text Preview</h3>
+                  <div className="p-3 bg-slate-50 rounded-lg max-h-48 overflow-y-auto">
+                    <pre className="text-xs text-slate-700 whitespace-pre-wrap">
+                      {String(selectedDocument.propertyData.rawExtractedData.extractedText).substring(0, 500)}
+                      {String(selectedDocument.propertyData.rawExtractedData.extractedText).length > 500 && "..."}
+                    </pre>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex gap-2 pt-4 border-t">
+                <Button 
+                  onClick={() => handleDownload(selectedDocument)}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setSelectedDocument(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

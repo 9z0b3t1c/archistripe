@@ -197,3 +197,32 @@ async function processDocumentAsync(documentId: string, filePath: string) {
     await deleteTempFile(filePath);
   }
 }
+
+  // Download a document
+  app.get("/api/documents/:id/download", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      const filePath = path.join(__dirname, "..", "uploads", document.filename);
+      if (!require('fs').existsSync(filePath)) {
+        return res.status(404).json({ error: "File not found on disk" });
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="${document.originalName}"`);
+      res.setHeader("Content-Type", document.mimeType);
+      
+      const fileStream = require('fs').createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      res.status(500).json({ error: "Failed to download document" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
