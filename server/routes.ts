@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertDocumentSchema, insertPropertyDataSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import { extractTextFromPDF, deleteTempFile } from "./services/pdf-parser";
 import { extractPropertyData } from "./services/grok";
 
@@ -53,58 +54,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Upload and process PDF
   app.post("/api/documents/upload", upload.single("file"), async (req: MulterRequest, res) => {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
     try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
       // Create document record
-      const documentData = {
+      const document = await storage.createDocument({
         filename: req.file.filename,
         originalName: req.file.originalname,
         size: req.file.size,
         mimeType: req.file.mimetype,
-        status: "uploaded",
-      };
-
-      const document = await storage.createDocument(documentData);
-
-      // Start processing in background
-      processDocumentAsync(document.id, req.file.path);
+        status: "processing",
+      });
 
       res.json(document);
+
+      // Process the document asynchronously
+      processDocumentAsync(document.id, req.file.path);
+
     } catch (error) {
       console.error("Upload error:", error);
-      res.status(500).json({ message: "Failed to upload document" });
+      res.status(500).json({ error: "Upload failed" });
     }
   });
 
-  // Get document by ID
-  app.get("/api/documents/:id", async (req, res) => {
-    try {
-      const document = await storage.getDocument(req.params.id);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
-      }
-
-      const propertyData = await storage.getPropertyDataByDocumentId(document.id);
-      res.json({ ...document, propertyData });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch document" });
-    }
-  });
-
-  // Delete document
-  app.delete("/api/documents/:id", async (req, res) => {
-    try {
-      await storage.deleteDocument(req.params.id);
-      res.json({ message: "Document deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete document" });
-    }
-  });
-
-  // Get all extracted property data
+  // Get property data
   app.get("/api/property-data", async (req, res) => {
     try {
       const propertyData = await storage.getAllPropertyData();
@@ -114,36 +89,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get analytics/stats
+  // Get analytics
   app.get("/api/analytics", async (req, res) => {
     try {
       const documents = await storage.getAllDocuments();
       const propertyData = await storage.getAllPropertyData();
 
-      const stats = {
-        totalDocuments: documents.length,
-        processedDocuments: documents.filter(d => d.status === "completed").length,
-        failedDocuments: documents.filter(d => d.status === "failed").length,
-        totalProperties: propertyData.length,
-        avgPrice: propertyData.length > 0 
-          ? propertyData.reduce((sum, p) => sum + (Number(p.price) || 0), 0) / propertyData.length 
-          : 0,
-        avgSquareFootage: propertyData.length > 0 
-          ? propertyData.reduce((sum, p) => sum + (p.squareFootage || 0), 0) / propertyData.length 
-          : 0,
-        avgBedrooms: propertyData.length > 0 
-          ? propertyData.reduce((sum, p) => sum + (p.bedrooms || 0), 0) / propertyData.length 
-          : 0,
-        propertyTypes: propertyData.reduce((acc, p) => {
-          const type = p.propertyType || "unknown";
-          acc[type] = (acc[type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-      };
+      const totalDocuments = documents.length;
+      const processedDocuments = documents.filter(d => d.status === "completed").length;
+      const failedDocuments = documents.filter(d => d.status === "failed").length;
 
-      res.json(stats);
+      const totalProperties = propertyData.length;
+      const avgPrice = propertyData
+        .filter(p => p.price)
+        .reduce((sum, p) => sum + parseFloat(p.price!), 0) / propertyData.filter(p => p.price).length || 0;
+      
+      const avgSquareFootage = propertyData
+        .filter(p => p.squareFootage)
+        .reduce((sum, p) => sum + p.squareFootage!, 0) / propertyData.filter(p => p.squareFootage).length || 0;
+      
+      const avgBedrooms = propertyData
+        .filter(p => p.bedrooms)
+        .reduce((sum, p) => sum + p.bedrooms!, 0) / propertyData.filter(p => p.bedrooms).length || 0;
+
+      const propertyTypes = propertyData.reduce((acc, p) => {
+        if (p.propertyType) {
+          acc[p.propertyType] = (acc[p.propertyType] || 0) + 1;
+        }
+        return acc;
+      }, {} as Record<string, number>);
+
+      res.json({
+        totalDocuments,
+        processedDocuments,
+        failedDocuments,
+        totalProperties,
+        avgPrice,
+        avgSquareFootage,
+        avgBedrooms,
+        propertyTypes,
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Delete a document
+  app.delete("/api/documents/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      // Delete the file from filesystem
+      const filePath = path.join(__dirname, '..', 'uploads', document.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      // Delete from storage
+      await storage.deleteDocument(id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      res.status(500).json({ error: 'Failed to delete document' });
+    }
+  });
+
+  // Download a document
+  app.get("/api/documents/:id/download", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      const filePath = path.join(__dirname, "..", "uploads", document.filename);
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "File not found on disk" });
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="${document.originalName}"`);
+      res.setHeader("Content-Type", document.mimeType);
+      
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      res.status(500).json({ error: "Failed to download document" });
     }
   });
 
@@ -151,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Background processing function
+// Process document asynchronously
 async function processDocumentAsync(documentId: string, filePath: string) {
   try {
     // Update status to processing
@@ -197,32 +236,3 @@ async function processDocumentAsync(documentId: string, filePath: string) {
     await deleteTempFile(filePath);
   }
 }
-
-  // Download a document
-  app.get("/api/documents/:id/download", async (req, res) => {
-    try {
-      const { id } = req.params;
-      
-      const document = await storage.getDocument(id);
-      if (!document) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-
-      const filePath = path.join(__dirname, "..", "uploads", document.filename);
-      if (!require('fs').existsSync(filePath)) {
-        return res.status(404).json({ error: "File not found on disk" });
-      }
-
-      res.setHeader("Content-Disposition", `attachment; filename="${document.originalName}"`);
-      res.setHeader("Content-Type", document.mimeType);
-      
-      const fileStream = require('fs').createReadStream(filePath);
-      fileStream.pipe(res);
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      res.status(500).json({ error: "Failed to download document" });
-    }
-  });
-
-  const httpServer = createServer(app);
-  return httpServer;
