@@ -33,6 +33,8 @@ export default function UploadPanel() {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         formData.append("file", file);
+        // Add processing options to the form data
+        formData.append("processingOptions", JSON.stringify(processingOptions));
         
         const response = await fetch("/api/documents/upload", {
           method: "POST",

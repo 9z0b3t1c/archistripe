@@ -88,7 +88,7 @@ export interface ExtractedPropertyData {
   [key: string]: any;
 }
 
-export async function extractPropertyDataFromPDF(extractedText: string, fileName: string): Promise<ExtractedPropertyData> {
+export async function extractPropertyDataFromPDF(extractedText: string, fileName: string, processingOptions: any = {}): Promise<ExtractedPropertyData> {
   try {
     // Emergency-level text truncation for Grok 4's 256k token limit
     // Some PDFs have extremely high token density (1.14 tokens per char observed)
@@ -127,12 +127,99 @@ export async function extractPropertyDataFromPDF(extractedText: string, fileName
       Please extract any available property information from the limited content, or indicate if this document type cannot be processed for property data extraction.`;
     }
     
+    // Build dynamic prompt based on processing options
+    let extractionCategories: string[] = [];
+    let processingInstructions: string[] = [];
+
+    if (processingOptions.extractPropertyDetails !== false) {
+      extractionCategories.push(`
+**BASIC PROPERTY INFO:**
+- address: Complete property address
+- city, state, zipCode, county, neighborhood
+- mlsNumber, parcelId, legalDescription
+
+**PROPERTY DETAILS:**
+- price, listPrice, salePrice, rentPrice, pricePerSqFt
+- squareFootage, lotSize (in sq ft or acres)
+- bedrooms, bathrooms, halfBaths, fullBaths
+- propertyType (house, condo, townhouse, commercial, etc.)
+- buildingType, yearBuilt, stories
+
+**FEATURES & AMENITIES:**
+- garage (attached/detached/none), parking spaces
+- basement (finished/unfinished/none), attic
+- pool (boolean), fireplace (boolean)
+- airConditioning, heating systems
+- appliances, flooring types
+- roofType, exteriorMaterial`);
+      processingInstructions.push("Extract comprehensive property details and physical characteristics");
+    }
+
+    if (processingOptions.parseFinancialInfo !== false) {
+      extractionCategories.push(`
+**FINANCIAL INFORMATION:**
+- taxes (annual property taxes)
+- hoa (monthly HOA fees)  
+- insurance, utilities costs
+- financing details, downPayment, mortgageRate
+- Any financial metrics, costs, or pricing data`);
+      processingInstructions.push("Parse all financial data, costs, and pricing information");
+    }
+
+    if (processingOptions.identifyDocumentType !== false) {
+      extractionCategories.push(`
+**DOCUMENT CLASSIFICATION:**
+- documentType: listing, contract, appraisal, inspection, tax_record, deed, disclosure, etc.
+- documentSubtype: purchase_agreement, rental_lease, home_inspection, etc.
+- REALESTATECORE SEMANTIC CLASSIFICATION:
+  - recBuildingType: single_family_house, apartment, office_building, retail, industrial, etc.
+  - recSpaceTypes: room types following REC taxonomy (bedroom, bathroom, kitchen, living_room, etc.)
+  - recAssetTypes: equipment and systems (hvac_system, electrical_system, plumbing_system, etc.)`);
+      processingInstructions.push("Identify and classify document type using RealEstateCore ontology");
+    }
+
+    if (processingOptions.generateSummary === true) {
+      extractionCategories.push(`
+**DOCUMENT SUMMARY:**
+- documentSummary: Comprehensive 2-3 sentence summary of key document content
+- keyHighlights: Array of 3-5 most important points from the document
+- documentPurpose: What this document is intended to accomplish`);
+      processingInstructions.push("Generate concise summary highlighting key document content and purpose");
+    }
+
+    // Always include these categories for comprehensive extraction
+    extractionCategories.push(`
+**DATES & TIMELINE:**
+- listDate, saleDate, closeDate, contractDate
+- inspectionDate, appraisalDate
+- Any relevant dates in MM/DD/YYYY format
+
+**CONDITION & IMPROVEMENTS:**
+- condition (excellent, good, fair, needs work)
+- renovations, recent improvements
+- Any mentioned repairs or issues
+
+**LOCATION & COMMUNITY:**
+- schoolDistrict, walkScore
+- nearbyAmenities (parks, shopping, etc.)
+- transportation access
+
+**OWNERSHIP & LEGAL:**
+- ownerName, titleCompany
+- Any legal restrictions or easements`);
+
     const prompt = `
 You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. You understand RealEstateCore (REC) ontology standards and semantic data modeling.
 
-Analyze the following text extracted from a PDF document and extract ALL possible property information, organizing it according to RealEstateCore ontology principles where applicable.
+PROCESSING CONFIGURATION:
+- Extract Property Details: ${processingOptions.extractPropertyDetails !== false ? 'YES' : 'NO'}
+- Parse Financial Info: ${processingOptions.parseFinancialInfo !== false ? 'YES' : 'NO'}  
+- Identify Document Type: ${processingOptions.identifyDocumentType !== false ? 'YES' : 'NO'}
+- Generate Summary: ${processingOptions.generateSummary === true ? 'YES' : 'NO'}
 
-EXTRACT ALL AVAILABLE INFORMATION FROM THESE CATEGORIES (with REC ontology alignment):
+Analyze the following text extracted from a PDF document and extract information from the enabled categories below:
+
+${extractionCategories.join('\n')}
 
 **BASIC PROPERTY INFO:**
 - address: Complete property address

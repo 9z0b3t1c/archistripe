@@ -60,6 +60,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
+      // Parse processing options from form data
+      let processingOptions = {
+        extractPropertyDetails: true,
+        parseFinancialInfo: true,
+        identifyDocumentType: true,
+        generateSummary: false,
+      };
+
+      if (req.body.processingOptions) {
+        try {
+          processingOptions = JSON.parse(req.body.processingOptions);
+        } catch (error) {
+          console.warn("Failed to parse processing options, using defaults");
+        }
+      }
+
       // Create document record
       const document = await storage.createDocument({
         filename: req.file.filename,
@@ -71,8 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(document);
 
-      // Process the document asynchronously
-      processDocumentAsync(document.id, req.file.path);
+      // Process the document asynchronously with options
+      processDocumentAsync(document.id, req.file.path, processingOptions);
 
     } catch (error) {
       console.error("Upload error:", error);
@@ -233,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Process document asynchronously
-async function processDocumentAsync(documentId: string, filePath: string) {
+async function processDocumentAsync(documentId: string, filePath: string, processingOptions: any = {}) {
   try {
     console.log(`Starting to process document ${documentId} with Grok 4 (256k tokens) + RealEstateCore integration`);
     
@@ -248,8 +264,9 @@ async function processDocumentAsync(documentId: string, filePath: string) {
     const document = await storage.getDocument(documentId);
     const originalFileName = document?.originalName || 'unknown.pdf';
 
-    // Extract comprehensive property data using enhanced Grok prompts
-    const propertyData = await extractPropertyDataFromPDF(extractedText, originalFileName);
+    // Extract comprehensive property data using enhanced Grok prompts with user preferences
+    console.log(`Processing options:`, processingOptions);
+    const propertyData = await extractPropertyDataFromPDF(extractedText, originalFileName, processingOptions);
     console.log(`Extracted property data:`, propertyData);
 
     // Transform to RealEstateCore JSON-LD structure
@@ -279,7 +296,8 @@ async function processDocumentAsync(documentId: string, filePath: string) {
       propertyType: details.propertyType || propertyData.propertyType || null,
       documentType: classification.documentType || propertyData.documentType || null,
       rawExtractedData: { 
-        processingMethod: 'enhanced-grok-text-analysis', 
+        processingMethod: 'customizable-grok-analysis', 
+        processingOptions: processingOptions,
         fileName: originalFileName,
         extractedText: extractedText.substring(0, 500) + '...',
         ...propertyData 
