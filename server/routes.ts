@@ -244,6 +244,10 @@ async function processDocumentAsync(documentId: string, filePath: string) {
         ...propertyData 
       },
       recData: recData, // RealEstateCore JSON-LD structure
+      fullGrokResponse: (propertyData as any).fullGrokResponse,
+      grokModelUsed: (propertyData as any).fullGrokResponse?.model,
+      grokTokensUsed: (propertyData as any).tokensUsed,
+      grokProcessingTime: (propertyData as any).processingTime,
     });
 
     // Update document status to completed

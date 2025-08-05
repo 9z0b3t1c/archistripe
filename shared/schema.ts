@@ -30,6 +30,13 @@ export const propertyData = pgTable("property_data", {
   documentType: text("document_type"), // listing, contract, appraisal, etc.
   rawExtractedData: jsonb("raw_extracted_data"),
   recData: jsonb("rec_data"), // RealEstateCore JSON-LD structure
+  
+  // Full Grok AI response storage
+  fullGrokResponse: jsonb("full_grok_response"),
+  grokModelUsed: text("grok_model_used"),
+  grokTokensUsed: integer("grok_tokens_used"),
+  grokProcessingTime: integer("grok_processing_time_ms"),
+  
   extractedAt: timestamp("extracted_at").defaultNow(),
 });
 

@@ -10,6 +10,7 @@ import { FileText, Search, Download, Trash2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { DocumentWithData } from "@shared/schema";
+import { GrokResponseViewer } from "./grok-response-viewer";
 
 export default function DocumentsPanel() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -234,6 +235,9 @@ export default function DocumentsPanel() {
                           <Download className="w-4 h-4 mr-1" />
                           Download
                         </Button>
+                        {doc.propertyData?.fullGrokResponse && (
+                          <GrokResponseViewer document={doc} />
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"

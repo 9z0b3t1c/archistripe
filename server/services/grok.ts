@@ -213,6 +213,7 @@ ${processedText}
     let modelToUse = "grok-4";
     let maxTokensLimit = 4000;
     
+    const startTime = Date.now();
     const response = await openai.chat.completions.create({
       model: modelToUse,
       messages: [
@@ -228,8 +229,22 @@ ${processedText}
       response_format: { type: "json_object" },
       max_tokens: maxTokensLimit,
     });
+    const processingTime = Date.now() - startTime;
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
+    
+    // Store the full response for analysis and debugging
+    const fullGrokResponse = {
+      model: response.model,
+      usage: response.usage,
+      response_time_ms: processingTime,
+      prompt_tokens: response.usage?.prompt_tokens,
+      completion_tokens: response.usage?.completion_tokens,
+      total_tokens: response.usage?.total_tokens,
+      full_response_content: response.choices[0].message.content,
+      parsed_result: result,
+      timestamp: new Date().toISOString()
+    };
     
     // Clean and validate the extracted data comprehensively
     const cleanedData: ExtractedPropertyData = {};
@@ -337,6 +352,11 @@ ${processedText}
         cleanedData[key] = result[key];
       }
     });
+
+    // Add the full Grok response to the cleaned data
+    (cleanedData as any).fullGrokResponse = fullGrokResponse;
+    (cleanedData as any).processingTime = processingTime;
+    (cleanedData as any).tokensUsed = response.usage?.total_tokens;
 
     return cleanedData;
   } catch (error) {
