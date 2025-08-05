@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDocumentSchema, insertPropertyDataSchema } from "@shared/schema";
+import { insertDocumentSchema, insertPropertyDataSchema, insertPropertySchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -43,6 +43,54 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Properties routes
+  app.get("/api/properties", async (req, res) => {
+    try {
+      const properties = await storage.getPropertiesWithDocuments();
+      res.json(properties);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch properties" });
+    }
+  });
+
+  app.post("/api/properties", async (req, res) => {
+    try {
+      const validatedData = insertPropertySchema.parse(req.body);
+      const property = await storage.createProperty(validatedData);
+      res.json(property);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid property data", details: error });
+    }
+  });
+
+  app.get("/api/properties/:id", async (req, res) => {
+    try {
+      const property = await storage.getProperty(req.params.id);
+      if (!property) {
+        return res.status(404).json({ error: "Property not found" });
+      }
+      const documents = await storage.getDocumentsByPropertyId(req.params.id);
+      const documentsWithData = await Promise.all(
+        documents.map(async (doc) => ({
+          ...doc,
+          propertyData: await storage.getPropertyDataByDocumentId(doc.id),
+        }))
+      );
+      res.json({ ...property, documents: documentsWithData });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch property" });
+    }
+  });
+
+  app.delete("/api/properties/:id", async (req, res) => {
+    try {
+      await storage.deleteProperty(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete property" });
+    }
+  });
+
   // Get all documents
   app.get("/api/documents", async (req, res) => {
     try {
@@ -53,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload and process PDF
+  // Upload and process PDF (with optional property grouping)
   app.post("/api/documents/upload", upload.single("file"), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
@@ -68,8 +116,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generateSummary: true,
       };
 
+      // Extract property ID if provided
+      const propertyId = req.body.propertyId || null;
+
       // Create document record
       const document = await storage.createDocument({
+        propertyId,
         filename: req.file.filename,
         originalName: req.file.originalname,
         size: req.file.size,

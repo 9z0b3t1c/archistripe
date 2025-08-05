@@ -11,7 +11,11 @@ import { apiRequest } from "@/lib/queryClient";
 import FileUpload from "@/components/ui/file-upload";
 import type { Document } from "@shared/schema";
 
-export default function UploadPanel() {
+interface UploadPanelProps {
+  selectedPropertyId: string | null;
+}
+
+export default function UploadPanel({ selectedPropertyId }: UploadPanelProps) {
   // Processing options are now always enabled
   const processingOptions = {
     extractPropertyDetails: true,
@@ -36,6 +40,10 @@ export default function UploadPanel() {
         formData.append("file", file);
         // Add processing options to the form data
         formData.append("processingOptions", JSON.stringify(processingOptions));
+        // Add property ID if selected
+        if (selectedPropertyId) {
+          formData.append("propertyId", selectedPropertyId);
+        }
         
         const response = await fetch("/api/documents/upload", {
           method: "POST",

@@ -1,10 +1,21 @@
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, integer, decimal, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
+
+// Properties table for grouping documents
+export const properties = pgTable("properties", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // User-provided property name
+  address: text("address"), // Primary address from first document
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
+});
 
 export const documents = pgTable("documents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  propertyId: varchar("property_id").references(() => properties.id), // Link to property
   filename: text("filename").notNull(),
   originalName: text("original_name").notNull(),
   size: integer("size").notNull(),
@@ -40,6 +51,36 @@ export const propertyData = pgTable("property_data", {
   extractedAt: timestamp("extracted_at").defaultNow(),
 });
 
+// Relations
+export const propertiesRelations = relations(properties, ({ many }) => ({
+  documents: many(documents),
+}));
+
+export const documentsRelations = relations(documents, ({ one }) => ({
+  property: one(properties, {
+    fields: [documents.propertyId],
+    references: [properties.id],
+  }),
+  propertyData: one(propertyData, {
+    fields: [documents.id],
+    references: [propertyData.documentId],
+  }),
+}));
+
+export const propertyDataRelations = relations(propertyData, ({ one }) => ({
+  document: one(documents, {
+    fields: [propertyData.documentId],
+    references: [documents.id],
+  }),
+}));
+
+// Schemas
+export const insertPropertySchema = createInsertSchema(properties).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   uploadedAt: true,
@@ -51,6 +92,10 @@ export const insertPropertyDataSchema = createInsertSchema(propertyData).omit({
   extractedAt: true,
 });
 
+// Types
+export type InsertProperty = z.infer<typeof insertPropertySchema>;
+export type Property = typeof properties.$inferSelect;
+
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
 
@@ -59,4 +104,8 @@ export type PropertyData = typeof propertyData.$inferSelect;
 
 export type DocumentWithData = Document & {
   propertyData?: PropertyData;
+};
+
+export type PropertyWithDocuments = Property & {
+  documents: DocumentWithData[];
 };

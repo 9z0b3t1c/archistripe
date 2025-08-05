@@ -4,11 +4,13 @@ import UploadPanel from "@/components/upload-panel";
 import DocumentsPanel from "@/components/documents-panel";
 import DataPanel from "@/components/data-panel";
 import AnalyticsPanel from "@/components/analytics-panel";
+import PropertySelector from "@/components/property-selector";
 
 type TabType = "upload" | "documents" | "data" | "analytics";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("upload");
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
 
   const tabs = [
     { id: "upload" as const, label: "Upload & Process", icon: Upload },
@@ -71,7 +73,15 @@ export default function Dashboard() {
         </nav>
 
         {/* Tab Content */}
-        {activeTab === "upload" && <UploadPanel />}
+        {activeTab === "upload" && (
+          <>
+            <PropertySelector 
+              selectedPropertyId={selectedPropertyId}
+              onPropertySelect={setSelectedPropertyId}
+            />
+            <UploadPanel selectedPropertyId={selectedPropertyId} />
+          </>
+        )}
         {activeTab === "documents" && <DocumentsPanel />}
         {activeTab === "data" && <DataPanel />}
         {activeTab === "analytics" && <AnalyticsPanel />}

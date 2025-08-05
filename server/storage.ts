@@ -1,11 +1,20 @@
-import { type Document, type InsertDocument, type PropertyData, type InsertPropertyData, type DocumentWithData } from "@shared/schema";
+import { type Document, type InsertDocument, type PropertyData, type InsertPropertyData, type DocumentWithData, type Property, type InsertProperty, type PropertyWithDocuments } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // Property operations
+  createProperty(property: InsertProperty): Promise<Property>;
+  getProperty(id: string): Promise<Property | undefined>;
+  getAllProperties(): Promise<Property[]>;
+  getPropertiesWithDocuments(): Promise<PropertyWithDocuments[]>;
+  updateProperty(id: string, updates: Partial<Property>): Promise<void>;
+  deleteProperty(id: string): Promise<void>;
+  
   // Document operations
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
   getAllDocuments(): Promise<Document[]>;
+  getDocumentsByPropertyId(propertyId: string): Promise<Document[]>;
   updateDocumentStatus(id: string, status: string, errorMessage?: string): Promise<void>;
   deleteDocument(id: string): Promise<void>;
   
@@ -17,18 +26,78 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private properties: Map<string, Property>;
   private documents: Map<string, Document>;
   private propertyData: Map<string, PropertyData>;
 
   constructor() {
+    this.properties = new Map();
     this.documents = new Map();
     this.propertyData = new Map();
+  }
+
+  // Property operations
+  async createProperty(insertProperty: InsertProperty): Promise<Property> {
+    const id = randomUUID();
+    const property: Property = {
+      id,
+      name: insertProperty.name,
+      address: insertProperty.address || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.properties.set(id, property);
+    return property;
+  }
+
+  async getProperty(id: string): Promise<Property | undefined> {
+    return this.properties.get(id);
+  }
+
+  async getAllProperties(): Promise<Property[]> {
+    return Array.from(this.properties.values()).sort(
+      (a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+    );
+  }
+
+  async getPropertiesWithDocuments(): Promise<PropertyWithDocuments[]> {
+    const properties = await this.getAllProperties();
+    return properties.map(property => ({
+      ...property,
+      documents: Array.from(this.documents.values())
+        .filter(doc => doc.propertyId === property.id)
+        .map(doc => ({
+          ...doc,
+          propertyData: Array.from(this.propertyData.values()).find(
+            data => data.documentId === doc.id
+          ),
+        }))
+        .sort((a, b) => (b.uploadedAt?.getTime() || 0) - (a.uploadedAt?.getTime() || 0)),
+    }));
+  }
+
+  async updateProperty(id: string, updates: Partial<Property>): Promise<void> {
+    const property = this.properties.get(id);
+    if (property) {
+      Object.assign(property, { ...updates, updatedAt: new Date() });
+      this.properties.set(id, property);
+    }
+  }
+
+  async deleteProperty(id: string): Promise<void> {
+    this.properties.delete(id);
+    // Delete associated documents and property data
+    const documentsToDelete = Array.from(this.documents.values()).filter(doc => doc.propertyId === id);
+    for (const doc of documentsToDelete) {
+      await this.deleteDocument(doc.id);
+    }
   }
 
   async createDocument(insertDocument: InsertDocument): Promise<Document> {
     const id = randomUUID();
     const document: Document = {
       id,
+      propertyId: insertDocument.propertyId || null,
       filename: insertDocument.filename,
       originalName: insertDocument.originalName,
       size: insertDocument.size,
@@ -40,6 +109,12 @@ export class MemStorage implements IStorage {
     };
     this.documents.set(id, document);
     return document;
+  }
+
+  async getDocumentsByPropertyId(propertyId: string): Promise<Document[]> {
+    return Array.from(this.documents.values())
+      .filter(doc => doc.propertyId === propertyId)
+      .sort((a, b) => (b.uploadedAt?.getTime() || 0) - (a.uploadedAt?.getTime() || 0));
   }
 
   async getDocument(id: string): Promise<Document | undefined> {
@@ -90,6 +165,11 @@ export class MemStorage implements IStorage {
       propertyType: insertPropertyData.propertyType || null,
       documentType: insertPropertyData.documentType || null,
       rawExtractedData: insertPropertyData.rawExtractedData || null,
+      recData: insertPropertyData.recData || null,
+      fullGrokResponse: insertPropertyData.fullGrokResponse || null,
+      grokModelUsed: insertPropertyData.grokModelUsed || null,
+      grokTokensUsed: insertPropertyData.grokTokensUsed || null,
+      grokProcessingTime: insertPropertyData.grokProcessingTime || null,
       extractedAt: new Date(),
     };
     this.propertyData.set(id, data);
