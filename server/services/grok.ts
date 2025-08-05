@@ -90,23 +90,23 @@ export interface ExtractedPropertyData {
 
 export async function extractPropertyDataFromPDF(extractedText: string, fileName: string): Promise<ExtractedPropertyData> {
   try {
-    // Smart text truncation for Grok 4's 256k token limit
-    // Grok 4 supports up to 256k tokens (~1M characters)
-    // Leave buffer for prompt overhead: ~50k tokens for instructions + 5k for response
-    // This allows ~800k characters for document content
-    const MAX_TEXT_LENGTH = 800000; // Much more generous limit with Grok 4
+    // Ultra-conservative text truncation for Grok 4's 256k token limit
+    // Real-world observation: some documents use more tokens per character
+    // Reserve 60k tokens for prompt overhead + 5k for response = 65k tokens  
+    // Safe remaining capacity: 191k tokens = ~380k characters maximum
+    const MAX_TEXT_LENGTH = 300000; // Ultra-conservative to handle token-dense documents
     let processedText = extractedText;
     
     if (extractedText.length > MAX_TEXT_LENGTH) {
-      console.log(`Text too long (${extractedText.length} chars), truncating to ${MAX_TEXT_LENGTH} chars for Grok 4's enhanced capacity`);
-      // Take first 400k and last 400k characters to capture comprehensive content
+      console.log(`Text too long (${extractedText.length} chars), applying ultra-conservative truncation to ${MAX_TEXT_LENGTH} chars to ensure we stay under Grok 4's 256k token limit`);
+      // Take first 150k and last 150k characters to capture key content
       const halfLength = MAX_TEXT_LENGTH / 2;
       const firstHalf = extractedText.substring(0, halfLength);
       const lastHalf = extractedText.substring(extractedText.length - halfLength);
-      processedText = firstHalf + "\n\n[... MIDDLE CONTENT TRUNCATED - DOCUMENT CONTINUES ...]\n\n" + lastHalf;
-      console.log(`Final processed text length: ${processedText.length} chars`);
+      processedText = firstHalf + "\n\n[... MIDDLE CONTENT TRUNCATED TO FIT TOKEN LIMITS - DOCUMENT CONTINUES ...]\n\n" + lastHalf;
+      console.log(`Final processed text length: ${processedText.length} chars (estimated ~${Math.ceil(processedText.length / 4)}k tokens)`);
     } else {
-      console.log(`Document length ${extractedText.length} chars fits within Grok 4's enhanced capacity`);
+      console.log(`Document length ${extractedText.length} chars (~${Math.ceil(extractedText.length / 4)}k tokens) fits within Grok 4's capacity`);
     }
     
     const prompt = `
