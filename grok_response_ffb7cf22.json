@@ -1,0 +1,116 @@
+{
+  "model": "grok-4-0709",
+  "usage": {
+    "prompt_tokens": 1008,
+    "completion_tokens": 488,
+    "total_tokens": 1937,
+    "prompt_tokens_details": {
+      "text_tokens": 1008,
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "cached_tokens": 5
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 441,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "num_sources_used": 0
+  },
+  "response_time_ms": 30311,
+  "prompt_tokens": 1008,
+  "completion_tokens": 488,
+  "total_tokens": 1937,
+  "full_response_content": "{\"basicPropertyInfo\":{\"address\":null,\"city\":null,\"state\":null,\"zipCode\":null,\"county\":null,\"neighborhood\":null,\"mlsNumber\":\"5160493\",\"parcelId\":\"I1030130R1L1\",\"legalDescription\":null},\"propertyDetails\":{\"price\":null,\"listPrice\":null,\"salePrice\":null,\"rentPrice\":null,\"pricePerSqFt\":null,\"squareFootage\":null,\"lotSize\":null,\"bedrooms\":null,\"bathrooms\":null,\"halfBaths\":null,\"fullBaths\":null,\"propertyType\":null,\"buildingType\":null,\"yearBuilt\":null,\"stories\":null},\"featuresAmenities\":{\"garage\":null,\"parkingSpaces\":null,\"basement\":null,\"attic\":null,\"pool\":null,\"fireplace\":null,\"airConditioning\":null,\"heatingSystems\":null,\"appliances\":null,\"flooringTypes\":null,\"roofType\":null,\"exteriorMaterial\":null},\"financialInformation\":{\"taxes\":null,\"hoa\":null,\"insurance\":null,\"utilitiesCosts\":null,\"financingDetails\":null,\"downPayment\":null,\"mortgageRate\":null},\"datesTimeline\":{\"listDate\":null,\"saleDate\":null,\"closeDate\":null,\"contractDate\":null,\"inspectionDate\":null,\"appraisalDate\":null},\"conditionImprovements\":{\"condition\":null,\"renovations\":null,\"recentImprovements\":null,\"repairsIssues\":null},\"locationCommunity\":{\"schoolDistrict\":null,\"walkScore\":null,\"nearbyAmenities\":null,\"transportationAccess\":null},\"documentClassification\":{\"documentType\":\"unprocessable\",\"documentSubtype\":\"pdf_metadata_or_image_based\"},\"realEstateCoreSemanticClassification\":{\"recBuildingType\":null,\"recSpaceTypes\":null,\"recAssetTypes\":null,\"recCapabilities\":null},\"ownershipLegal\":{\"ownerName\":null,\"titleCompany\":null,\"legalRestrictions\":null},\"additionalNotes\":\"The provided text content consists primarily of PDF metadata and encoded streams, with no readable property information. The document may be image-based (e.g., scanned PDF requiring OCR), a graphical document (e.g., floor plans or diagrams), or have rendering issues preventing text extraction. Limited inferences from filename: possible MLS number '5160493' and identifier 'I1030130R1L1'. No RealEstateCore semantic classifications applicable due to lack of content.\"}",
+  "parsed_result": {
+    "basicPropertyInfo": {
+      "address": null,
+      "city": null,
+      "state": null,
+      "zipCode": null,
+      "county": null,
+      "neighborhood": null,
+      "mlsNumber": "5160493",
+      "parcelId": "I1030130R1L1",
+      "legalDescription": null
+    },
+    "propertyDetails": {
+      "price": null,
+      "listPrice": null,
+      "salePrice": null,
+      "rentPrice": null,
+      "pricePerSqFt": null,
+      "squareFootage": null,
+      "lotSize": null,
+      "bedrooms": null,
+      "bathrooms": null,
+      "halfBaths": null,
+      "fullBaths": null,
+      "propertyType": null,
+      "buildingType": null,
+      "yearBuilt": null,
+      "stories": null
+    },
+    "featuresAmenities": {
+      "garage": null,
+      "parkingSpaces": null,
+      "basement": null,
+      "attic": null,
+      "pool": null,
+      "fireplace": null,
+      "airConditioning": null,
+      "heatingSystems": null,
+      "appliances": null,
+      "flooringTypes": null,
+      "roofType": null,
+      "exteriorMaterial": null
+    },
+    "financialInformation": {
+      "taxes": null,
+      "hoa": null,
+      "insurance": null,
+      "utilitiesCosts": null,
+      "financingDetails": null,
+      "downPayment": null,
+      "mortgageRate": null
+    },
+    "datesTimeline": {
+      "listDate": null,
+      "saleDate": null,
+      "closeDate": null,
+      "contractDate": null,
+      "inspectionDate": null,
+      "appraisalDate": null
+    },
+    "conditionImprovements": {
+      "condition": null,
+      "renovations": null,
+      "recentImprovements": null,
+      "repairsIssues": null
+    },
+    "locationCommunity": {
+      "schoolDistrict": null,
+      "walkScore": null,
+      "nearbyAmenities": null,
+      "transportationAccess": null
+    },
+    "documentClassification": {
+      "documentType": "unprocessable",
+      "documentSubtype": "pdf_metadata_or_image_based"
+    },
+    "realEstateCoreSemanticClassification": {
+      "recBuildingType": null,
+      "recSpaceTypes": null,
+      "recAssetTypes": null,
+      "recCapabilities": null
+    },
+    "ownershipLegal": {
+      "ownerName": null,
+      "titleCompany": null,
+      "legalRestrictions": null
+    },
+    "additionalNotes": "The provided text content consists primarily of PDF metadata and encoded streams, with no readable property information. The document may be image-based (e.g., scanned PDF requiring OCR), a graphical document (e.g., floor plans or diagrams), or have rendering issues preventing text extraction. Limited inferences from filename: possible MLS number '5160493' and identifier 'I1030130R1L1'. No RealEstateCore semantic classifications applicable due to lack of content."
+  },
+  "timestamp": "2025-08-05T16:53:01.571Z"
+}

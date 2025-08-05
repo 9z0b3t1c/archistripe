@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Response Viewer</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .document { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .grok-response { background: #f1f5f9; padding: 15px; border-radius: 6px; margin-top: 15px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .metric { background: white; padding: 12px; border-radius: 6px; }
+        .metric-label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+        .metric-value { font-size: 18px; font-weight: 700; color: #1e293b; }
+        .raw-response { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 12px; line-height: 1.4; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+        .button { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 10px; }
+        .button:hover { background: #2563eb; }
+        .button.secondary { background: #6b7280; }
+        .button.secondary:hover { background: #4b5563; }
+        .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .status.completed { background: #dcfce7; color: #166534; }
+        .loading { text-align: center; padding: 40px; color: #6b7280; }
+        .error { background: #fef2f2; color: #dc2626; padding: 15px; border-radius: 6px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Full Grok AI Response Viewer</h1>
+            <p>Access complete AI analysis responses for all processed documents</p>
+            <button class="button" onclick="loadDocuments()">Refresh Documents</button>
+        </div>
+        
+        <div id="content">
+            <div class="loading">Loading documents...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDocuments() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading documents...</div>';
+            
+            try {
+                const response = await fetch('/api/documents');
+                const documents = await response.json();
+                
+                if (!documents || documents.length === 0) {
+                    content.innerHTML = '<div class="error">No documents found. Upload and process documents first.</div>';
+                    return;
+                }
+                
+                let html = '';
+                let grokCount = 0;
+                
+                documents.forEach((doc, index) => {
+                    const hasGrok = doc.propertyData?.rawExtractedData?.fullGrokResponse;
+                    if (hasGrok) grokCount++;
+                    
+                    html += `
+                        <div class="document">
+                            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 15px;">
+                                <div>
+                                    <h3 style="margin: 0; color: #1e293b;">${doc.originalName}</h3>
+                                    <p style="margin: 5px 0; color: #64748b; font-size: 14px;">
+                                        Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}
+                                    </p>
+                                </div>
+                                <span class="status completed">${doc.status}</span>
+                            </div>
+                            
+                            ${hasGrok ? renderGrokResponse(doc) : '<div class="error">No Grok response available for this document</div>'}
+                        </div>
+                    `;
+                });
+                
+                content.innerHTML = `
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h2>Summary: ${grokCount} of ${documents.length} documents have full Grok responses</h2>
+                    </div>
+                    ${html}
+                `;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error loading documents: ${error.message}</div>`;
+            }
+        }
+        
+        function renderGrokResponse(doc) {
+            const gr = doc.propertyData.rawExtractedData.fullGrokResponse;
+            const classification = gr.parsed_result?.documentClassification || {};
+            
+            return `
+                <div class="grok-response">
+                    <h4 style="margin-top: 0; color: #059669;">✅ Full Grok Response Available</h4>
+                    
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Model</div>
+                            <div class="metric-value">${gr.model || 'Unknown'}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Total Tokens</div>
+                            <div class="metric-value">${(gr.total_tokens || 0).toLocaleString()}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Processing Time</div>
+                            <div class="metric-value">${((gr.response_time_ms || 0) / 1000).toFixed(1)}s</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Document Type</div>
+                            <div class="metric-value">${classification.documentType || 'Unknown'}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <button class="button" onclick="downloadGrokResponse('${doc.id}', '${doc.originalName}')">
+                            Download Full Response
+                        </button>
+                        <button class="button secondary" onclick="toggleRawResponse('${doc.id}')">
+                            Show/Hide Raw Response
+                        </button>
+                    </div>
+                    
+                    <div id="raw-${doc.id}" style="display: none;">
+                        <h5>Raw AI Response (${(gr.full_response_content || '').length.toLocaleString()} characters):</h5>
+                        <div class="raw-response">${gr.full_response_content || 'No raw content available'}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function downloadGrokResponse(docId, fileName) {
+            fetch('/api/documents')
+                .then(response => response.json())
+                .then(documents => {
+                    const doc = documents.find(d => d.id === docId);
+                    if (doc?.propertyData?.rawExtractedData?.fullGrokResponse) {
+                        const grokResponse = doc.propertyData.rawExtractedData.fullGrokResponse;
+                        const blob = new Blob([JSON.stringify(grokResponse, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `grok_response_${fileName}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                });
+        }
+        
+        function toggleRawResponse(docId) {
+            const element = document.getElementById(`raw-${docId}`);
+            element.style.display = element.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Load documents on page load
+        loadDocuments();
+    </script>
+</body>
+</html>
