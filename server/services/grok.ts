@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import fs from "fs";
+import { extractTextFromPDF } from './pdf-parser.js';
 
 const openai = new OpenAI({ 
   baseURL: "https://api.x.ai/v1", 
@@ -86,10 +88,11 @@ interface ExtractedPropertyData {
   [key: string]: any;
 }
 
-export async function extractPropertyData(text: string): Promise<ExtractedPropertyData> {
+export async function extractPropertyDataFromPDF(extractedText: string, fileName: string): Promise<ExtractedPropertyData> {
   try {
+    
     const prompt = `
-You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. Analyze the following text and extract ALL possible property information.
+You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. Analyze the following text extracted from a PDF document and extract ALL possible property information.
 
 EXTRACT ALL AVAILABLE INFORMATION FROM THESE CATEGORIES:
 
@@ -152,16 +155,18 @@ INSTRUCTIONS:
 - If information is unclear but can be reasonably inferred, include it
 - Return comprehensive JSON with all found data
 
-Text to analyze:
-${text}
+Document filename: ${fileName}
+
+Text content to analyze:
+${extractedText}
 `;
 
     const response = await openai.chat.completions.create({
-      model: "grok-2-1212",
+      model: "grok-2-1212", // Use text model since vision doesn't support PDF
       messages: [
         {
           role: "system",
-          content: "You are a comprehensive real estate document analysis expert. Extract ALL available property, financial, legal, and contextual information from any real estate document type. Be thorough and extract every detail that could be valuable for property analysis, valuation, or decision-making."
+          content: "You are a comprehensive real estate document analysis expert. Extract ALL available property, financial, legal, and contextual information from text extracted from real estate documents. Be thorough and extract every detail that could be valuable for property analysis, valuation, or decision-making."
         },
         {
           role: "user",

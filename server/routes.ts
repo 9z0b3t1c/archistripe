@@ -5,8 +5,8 @@ import { insertDocumentSchema, insertPropertyDataSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { extractPropertyDataFromPDF } from "./services/grok";
 import { extractTextFromPDF, deleteTempFile } from "./services/pdf-parser";
-import { extractPropertyData } from "./services/grok";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -193,16 +193,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // Process document asynchronously
 async function processDocumentAsync(documentId: string, filePath: string) {
   try {
+    console.log(`Starting to process document ${documentId} with direct PDF analysis`);
+    
     // Update status to processing
     await storage.updateDocumentStatus(documentId, "processing");
 
-    // Extract text from PDF
+    // Extract text from PDF first
     const extractedText = await extractTextFromPDF(filePath);
+    console.log(`Extracted text length: ${extractedText.length} characters`);
+    
+    // Get original filename from storage
+    const document = await storage.getDocument(documentId);
+    const originalFileName = document?.originalName || 'unknown.pdf';
 
-    // Use Grok AI to extract structured data
-    const propertyData = await extractPropertyData(extractedText);
+    // Extract comprehensive property data using enhanced Grok prompts
+    const propertyData = await extractPropertyDataFromPDF(extractedText, originalFileName);
+    console.log(`Extracted property data:`, propertyData);
 
-    // Save extracted property data
+    // Save extracted property data with all new comprehensive fields
     await storage.createPropertyData({
       documentId,
       address: propertyData.address || null,
@@ -215,7 +223,11 @@ async function processDocumentAsync(documentId: string, filePath: string) {
       bathrooms: propertyData.bathrooms ? propertyData.bathrooms.toString() : null,
       propertyType: propertyData.propertyType || null,
       documentType: propertyData.documentType || null,
-      rawExtractedData: { extractedText, ...propertyData },
+      rawExtractedData: { 
+        processingMethod: 'grok-vision-direct', 
+        fileName: originalFileName,
+        ...propertyData 
+      },
     });
 
     // Update document status to completed
@@ -223,6 +235,8 @@ async function processDocumentAsync(documentId: string, filePath: string) {
 
     // Clean up temp file
     await deleteTempFile(filePath);
+    
+    console.log(`Successfully processed document ${documentId} using direct PDF analysis`);
 
   } catch (error) {
     console.error("Processing error:", error);
