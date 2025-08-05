@@ -90,7 +90,7 @@ export default function DocumentsPanel() {
     }
   };
 
-  const getDocumentTypeBadge = (type?: string) => {
+  const getDocumentTypeBadge = (type?: string | null) => {
     if (!type) return <Badge variant="outline">Unknown</Badge>;
     
     const colors = {
@@ -292,7 +292,7 @@ export default function DocumentsPanel() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-slate-600">Document Type</div>
-                  <div>{getDocumentTypeBadge(selectedDocument.propertyData?.documentType || undefined)}</div>
+                  <div>{getDocumentTypeBadge(selectedDocument.propertyData?.documentType || "")}</div>
                 </div>
               </div>
 

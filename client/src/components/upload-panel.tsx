@@ -34,7 +34,16 @@ export default function UploadPanel() {
         const formData = new FormData();
         formData.append("file", file);
         
-        const response = await apiRequest("POST", "/api/documents/upload", formData);
+        const response = await fetch("/api/documents/upload", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || `Upload failed: ${response.status}`);
+        }
+        
         return response.json();
       });
       
