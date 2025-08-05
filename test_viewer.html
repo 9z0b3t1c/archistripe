@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grok Response Viewer Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Grok Response Viewer Interface Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results">Loading test results...</div>
+    </div>
+
+    <script>
+        async function testGrokViewer() {
+            try {
+                const response = await fetch('/api/documents');
+                const documents = await response.json();
+                
+                const resultsDiv = document.getElementById('results');
+                
+                if (documents.length === 0) {
+                    resultsDiv.innerHTML = '<p class="error">❌ No documents found for testing</p>';
+                    return;
+                }
+                
+                const doc = documents[0];
+                let html = `<h3 class="success">✅ Document Found: ${doc.originalName}</h3>`;
+                html += `<p><strong>Status:</strong> ${doc.status}</p>`;
+                
+                if (doc.propertyData && doc.propertyData.fullGrokResponse) {
+                    const gr = doc.propertyData.fullGrokResponse;
+                    html += '<h4 class="success">✅ Full Grok Response Available</h4>';
+                    html += `<ul>`;
+                    html += `<li><strong>Model:</strong> ${gr.model || 'N/A'}</li>`;
+                    html += `<li><strong>Total Tokens:</strong> ${gr.total_tokens || 'N/A'}</li>`;
+                    html += `<li><strong>Processing Time:</strong> ${gr.response_time_ms || 'N/A'}ms</li>`;
+                    html += `<li><strong>Response Content Length:</strong> ${gr.full_response_content ? gr.full_response_content.length : 0} chars</li>`;
+                    html += `<li><strong>Has Parsed Result:</strong> ${gr.parsed_result ? 'Yes' : 'No'}</li>`;
+                    html += `<li><strong>Timestamp:</strong> ${gr.timestamp || 'N/A'}</li>`;
+                    html += `</ul>`;
+                    
+                    if (gr.parsed_result && gr.parsed_result.documentClassification) {
+                        html += `<p><strong>Document Type Detected:</strong> ${gr.parsed_result.documentClassification.documentType || 'N/A'}</p>`;
+                    }
+                    
+                    html += '<p class="success"><strong>✅ Grok Response Viewer Interface Ready!</strong></p>';
+                    html += '<p class="info">The viewer component will display:</p>';
+                    html += '<ul>';
+                    html += '<li>📊 Usage metrics (tokens, processing time)</li>';
+                    html += '<li>📋 Summary tab with API usage details</li>';
+                    html += '<li>🔍 Parsed result tab with extracted data</li>';
+                    html += '<li>📄 Raw response tab with full AI response</li>';
+                    html += '<li>🔧 Full metadata tab for debugging</li>';
+                    html += '<li>📋 Copy functionality for JSON data</li>';
+                    html += '</ul>';
+                } else {
+                    html += '<p class="error">❌ No full Grok response found in document</p>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = 
+                    `<p class="error">❌ Error testing viewer: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test on page load
+        testGrokViewer();
+    </script>
+</body>
+</html>
