@@ -90,16 +90,20 @@ export interface ExtractedPropertyData {
 
 export async function extractPropertyDataFromPDF(extractedText: string, fileName: string): Promise<ExtractedPropertyData> {
   try {
-    // Truncate text to fit within Grok's token limits (roughly 100k tokens = ~400k characters)
-    const MAX_TEXT_LENGTH = 400000;
+    // Ultra-aggressive text truncation for Grok's 131k token limit
+    // Grok uses ~4 chars per token, so 131k tokens = ~500k chars max
+    // Leave significant buffer for prompt overhead
+    const MAX_TEXT_LENGTH = 150000; // Very conservative limit
     let processedText = extractedText;
     
     if (extractedText.length > MAX_TEXT_LENGTH) {
-      console.log(`Text too long (${extractedText.length} chars), truncating to ${MAX_TEXT_LENGTH} chars`);
-      // Take first 200k and last 200k characters to capture both header and footer information
-      const firstHalf = extractedText.substring(0, MAX_TEXT_LENGTH / 2);
-      const lastHalf = extractedText.substring(extractedText.length - MAX_TEXT_LENGTH / 2);
-      processedText = firstHalf + "\n\n[... content truncated ...]\n\n" + lastHalf;
+      console.log(`Text too long (${extractedText.length} chars), applying ultra-aggressive truncation to ${MAX_TEXT_LENGTH} chars`);
+      // Take first 75k and last 75k characters
+      const halfLength = MAX_TEXT_LENGTH / 2;
+      const firstHalf = extractedText.substring(0, halfLength);
+      const lastHalf = extractedText.substring(extractedText.length - halfLength);
+      processedText = firstHalf + "\n\n[... LARGE DOCUMENT TRUNCATED FOR PROCESSING ...]\n\n" + lastHalf;
+      console.log(`Final processed text length: ${processedText.length} chars`);
     }
     
     const prompt = `
@@ -197,7 +201,7 @@ ${processedText}
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 4000, // Increased for comprehensive extraction
+      max_tokens: 3000, // Balanced for comprehensive extraction within limits
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
