@@ -21,6 +21,7 @@ This is a full-stack real estate document parser application that allows users t
 - ✅ Increased extraction scope to include: financial details, legal information, dates/timeline, features/amenities, condition, location data, and document classification
 - ✅ **SIMPLIFIED PROCESSING**: Removed complex PDF-to-vision approach, using optimized text extraction + enhanced Grok text analysis for maximum compatibility and reliability
 - ✅ **REALESTATECORE INTEGRATION**: Implemented Phase 1 of REC ontology support with JSON-LD generation, semantic classification, and standardized data structure transformation
+- ✅ **ENHANCED ERROR HANDLING**: Fixed token limit issues for large documents with intelligent text truncation (400k character limit with smart beginning/end capture)
 
 # User Preferences
 

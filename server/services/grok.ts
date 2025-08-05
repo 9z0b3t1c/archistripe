@@ -90,6 +90,17 @@ export interface ExtractedPropertyData {
 
 export async function extractPropertyDataFromPDF(extractedText: string, fileName: string): Promise<ExtractedPropertyData> {
   try {
+    // Truncate text to fit within Grok's token limits (roughly 100k tokens = ~400k characters)
+    const MAX_TEXT_LENGTH = 400000;
+    let processedText = extractedText;
+    
+    if (extractedText.length > MAX_TEXT_LENGTH) {
+      console.log(`Text too long (${extractedText.length} chars), truncating to ${MAX_TEXT_LENGTH} chars`);
+      // Take first 200k and last 200k characters to capture both header and footer information
+      const firstHalf = extractedText.substring(0, MAX_TEXT_LENGTH / 2);
+      const lastHalf = extractedText.substring(extractedText.length - MAX_TEXT_LENGTH / 2);
+      processedText = firstHalf + "\n\n[... content truncated ...]\n\n" + lastHalf;
+    }
     
     const prompt = `
 You are an expert real estate document parser with deep knowledge of property listings, contracts, appraisals, inspections, tax records, and all real estate documentation. You understand RealEstateCore (REC) ontology standards and semantic data modeling.
@@ -167,9 +178,10 @@ INSTRUCTIONS:
 - Return comprehensive JSON with all found data AND REC-compatible structure
 
 Document filename: ${fileName}
+Text length: ${processedText.length} characters
 
 Text content to analyze:
-${extractedText}
+${processedText}
 `;
 
     const response = await openai.chat.completions.create({
@@ -185,7 +197,7 @@ ${extractedText}
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 2000,
+      max_tokens: 4000, // Increased for comprehensive extraction
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
