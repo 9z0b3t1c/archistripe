@@ -1,0 +1,119 @@
+{
+  "model": "grok-4-0709",
+  "usage": {
+    "prompt_tokens": 980,
+    "completion_tokens": 443,
+    "total_tokens": 1834,
+    "prompt_tokens_details": {
+      "text_tokens": 980,
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "cached_tokens": 5
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 411,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "num_sources_used": 0
+  },
+  "response_time_ms": 21683,
+  "prompt_tokens": 980,
+  "completion_tokens": 443,
+  "total_tokens": 1834,
+  "full_response_content": "{\"basicPropertyInfo\":{\"address\":null,\"city\":null,\"state\":null,\"zipCode\":null,\"county\":null,\"neighborhood\":null,\"mlsNumber\":null,\"parcelId\":null,\"legalDescription\":null},\"propertyDetails\":{\"price\":null,\"listPrice\":null,\"salePrice\":null,\"rentPrice\":null,\"pricePerSqFt\":null,\"squareFootage\":null,\"lotSize\":null,\"bedrooms\":null,\"bathrooms\":null,\"halfBaths\":null,\"fullBaths\":null,\"propertyType\":null,\"buildingType\":null,\"yearBuilt\":null,\"stories\":null},\"featuresAmenities\":{\"garage\":null,\"parkingSpaces\":null,\"basement\":null,\"attic\":null,\"pool\":false,\"fireplace\":false,\"airConditioning\":null,\"heatingSystems\":null,\"appliances\":null,\"flooringTypes\":null,\"roofType\":null,\"exteriorMaterial\":null},\"financialInformation\":{\"taxes\":null,\"hoa\":null,\"insurance\":null,\"utilitiesCosts\":null,\"financingDetails\":null,\"downPayment\":null,\"mortgageRate\":null},\"datesTimeline\":{\"listDate\":null,\"saleDate\":null,\"closeDate\":null,\"contractDate\":null,\"inspectionDate\":null,\"appraisalDate\":null},\"conditionImprovements\":{\"condition\":null,\"renovations\":null,\"recentImprovements\":null,\"repairsOrIssues\":null},\"locationCommunity\":{\"schoolDistrict\":null,\"walkScore\":null,\"nearbyAmenities\":null,\"transportationAccess\":null},\"documentClassification\":{\"documentType\":\"unprocessable_pdf\",\"documentSubtype\":\"pdf_metadata_or_structure\"},\"realEstateCoreSemanticClassification\":{\"recBuildingType\":null,\"recSpaceTypes\":null,\"recAssetTypes\":null,\"recCapabilities\":null},\"ownershipLegal\":{\"ownerName\":null,\"titleCompany\":null,\"legalRestrictionsOrEasements\":null},\"additionalNotes\":{\"extractionStatus\":\"No readable property information available. Document contains only PDF metadata and structural elements, suggesting it may be image-based, scanned, or have rendering issues requiring OCR for further analysis.\",\"documentFilename\":\"1090_001_1754407418719.pdf\"}}",
+  "parsed_result": {
+    "basicPropertyInfo": {
+      "address": null,
+      "city": null,
+      "state": null,
+      "zipCode": null,
+      "county": null,
+      "neighborhood": null,
+      "mlsNumber": null,
+      "parcelId": null,
+      "legalDescription": null
+    },
+    "propertyDetails": {
+      "price": null,
+      "listPrice": null,
+      "salePrice": null,
+      "rentPrice": null,
+      "pricePerSqFt": null,
+      "squareFootage": null,
+      "lotSize": null,
+      "bedrooms": null,
+      "bathrooms": null,
+      "halfBaths": null,
+      "fullBaths": null,
+      "propertyType": null,
+      "buildingType": null,
+      "yearBuilt": null,
+      "stories": null
+    },
+    "featuresAmenities": {
+      "garage": null,
+      "parkingSpaces": null,
+      "basement": null,
+      "attic": null,
+      "pool": false,
+      "fireplace": false,
+      "airConditioning": null,
+      "heatingSystems": null,
+      "appliances": null,
+      "flooringTypes": null,
+      "roofType": null,
+      "exteriorMaterial": null
+    },
+    "financialInformation": {
+      "taxes": null,
+      "hoa": null,
+      "insurance": null,
+      "utilitiesCosts": null,
+      "financingDetails": null,
+      "downPayment": null,
+      "mortgageRate": null
+    },
+    "datesTimeline": {
+      "listDate": null,
+      "saleDate": null,
+      "closeDate": null,
+      "contractDate": null,
+      "inspectionDate": null,
+      "appraisalDate": null
+    },
+    "conditionImprovements": {
+      "condition": null,
+      "renovations": null,
+      "recentImprovements": null,
+      "repairsOrIssues": null
+    },
+    "locationCommunity": {
+      "schoolDistrict": null,
+      "walkScore": null,
+      "nearbyAmenities": null,
+      "transportationAccess": null
+    },
+    "documentClassification": {
+      "documentType": "unprocessable_pdf",
+      "documentSubtype": "pdf_metadata_or_structure"
+    },
+    "realEstateCoreSemanticClassification": {
+      "recBuildingType": null,
+      "recSpaceTypes": null,
+      "recAssetTypes": null,
+      "recCapabilities": null
+    },
+    "ownershipLegal": {
+      "ownerName": null,
+      "titleCompany": null,
+      "legalRestrictionsOrEasements": null
+    },
+    "additionalNotes": {
+      "extractionStatus": "No readable property information available. Document contains only PDF metadata and structural elements, suggesting it may be image-based, scanned, or have rendering issues requiring OCR for further analysis.",
+      "documentFilename": "1090_001_1754407418719.pdf"
+    }
+  },
+  "timestamp": "2025-08-05T16:36:04.807Z"
+}

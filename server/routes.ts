@@ -102,7 +102,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const propertyData = await storage.getPropertyDataByDocumentId(id);
       
-      if (!propertyData || !propertyData.fullGrokResponse) {
+      if (!propertyData || !propertyData.rawExtractedData) {
+        console.log("No property data or raw extracted data found for document:", id);
+        return res.status(404).json({ error: "No processed data found for this document" });
+      }
+
+      // The full Grok response is stored in rawExtractedData.fullGrokResponse
+      const rawData = propertyData.rawExtractedData as any;
+      
+      if (!rawData || !rawData.fullGrokResponse) {
         return res.status(404).json({ error: "No Grok response found for this document" });
       }
 
@@ -112,10 +120,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           originalName: document.originalName,
           status: document.status
         },
-        fullGrokResponse: propertyData.fullGrokResponse,
-        grokModelUsed: propertyData.grokModelUsed,
-        grokTokensUsed: propertyData.grokTokensUsed,
-        grokProcessingTime: propertyData.grokProcessingTime
+        fullGrokResponse: rawData.fullGrokResponse,
+        grokModelUsed: rawData.fullGrokResponse.model,
+        grokTokensUsed: rawData.tokensUsed || rawData.fullGrokResponse.total_tokens,
+        grokProcessingTime: rawData.processingTime || rawData.fullGrokResponse.response_time_ms
       });
     } catch (error) {
       console.error("Error fetching Grok response:", error);
