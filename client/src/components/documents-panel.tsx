@@ -303,25 +303,35 @@ export default function DocumentsPanel() {
                   
                   {/* Check if this is a problematic document with no property data */}
                   {(selectedDocument.propertyData.documentType === 'pdf_metadata' || 
-                    selectedDocument.propertyData.documentType === 'graphical_document') && (
+                    selectedDocument.propertyData.documentType === 'graphical_document' ||
+                    selectedDocument.propertyData.documentType === 'unknown' ||
+                    !selectedDocument.propertyData.address) && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
                       <div className="flex items-start gap-3">
                         <div className="text-amber-600 mt-0.5">⚠️</div>
                         <div>
                           <h4 className="font-medium text-amber-800 text-sm">
                             {selectedDocument.propertyData.documentType === 'graphical_document' 
-                              ? 'Graphical Document Detected' 
+                              ? 'Graphical Document Detected'
+                              : selectedDocument.propertyData.documentType === 'unknown'
+                              ? 'No Property Data Extracted'
                               : 'Limited Text Content Detected'}
                           </h4>
                           <p className="text-sm text-amber-700 mt-1">
                             {selectedDocument.propertyData.documentType === 'graphical_document'
                               ? 'This appears to be a floor plan, diagram, or primarily image-based document. The system cannot extract property data from graphical content.'
+                              : selectedDocument.propertyData.documentType === 'unknown'
+                              ? 'This PDF contains primarily metadata or structural elements without readable property information. It may be scanned, image-based, or have text rendering issues.'
                               : 'This PDF contains primarily images or scanned content. For best results, please use PDFs with selectable text.'}
                             {' '}Try uploading property listings, contracts, or appraisals with readable text content.
                           </p>
-                          {selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.notes && (
+                          {(selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.notes ||
+                            selectedDocument.propertyData.rawExtractedData?.documentClassification?.notes ||
+                            selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.extractionNotes) && (
                             <p className="text-xs text-amber-600 mt-2 italic">
-                              {selectedDocument.propertyData.rawExtractedData.additionalExtractedInfo.notes}
+                              {selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.notes ||
+                               selectedDocument.propertyData.rawExtractedData?.documentClassification?.notes ||
+                               selectedDocument.propertyData.rawExtractedData?.additionalExtractedInfo?.extractionNotes}
                             </p>
                           )}
                         </div>
